@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                 symbolManager.setIconIgnorePlacement(true);
                 symbolManager.setTextIgnorePlacement(true);
 
-                // Add Red and Green marker images programmatically
+                // Add Red and Green marker images programmatically (Enlarged to 128px for excellent visibility)
                 style.addImage("red-marker", createMarkerBitmap(Color.parseColor("#E53935"))); // Crimson Red
                 style.addImage("green-marker", createMarkerBitmap(Color.parseColor("#4CAF50"))); // Vibrant Green
 
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                         .withTextField("Red Point (~1km)")
                         .withTextColor("#E53935")
                         .withTextSize(12f)
-                        .withTextOffset(new Float[]{0f, 1.5f});
+                        .withTextOffset(new Float[]{0f, 1.8f});
 
                 // Create the Green Point marker
                 SymbolOptions greenOptions = new SymbolOptions()
@@ -100,24 +100,23 @@ public class MainActivity extends AppCompatActivity {
                         .withTextField("Green Point (~1km)")
                         .withTextColor("#4CAF50")
                         .withTextSize(12f)
-                        .withTextOffset(new Float[]{0f, 1.5f});
+                        .withTextOffset(new Float[]{0f, 1.8f});
 
                 redSymbol = symbolManager.create(redOptions);
                 greenSymbol = symbolManager.create(greenOptions);
 
-                // Adjust camera view bounds to perfectly fit both markers on screen with 150px padding
-                LatLngBounds bounds = new LatLngBounds.Builder()
-                        .include(redLatLng)
-                        .include(greenLatLng)
-                        .build();
+                // Calculate the midpoint between the points
+                LatLng midpoint = new LatLng(
+                        (redLatLng.getLatitude() + greenLatLng.getLatitude()) / 2.0,
+                        (redLatLng.getLongitude() + greenLatLng.getLongitude()) / 2.0
+                );
 
-                mapView.postDelayed(() -> {
-                    if (!isDestroyed()) {
-                        mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150));
-                        // Start the loop after the initial framing is complete
-                        startMovementLoop();
-                    }
-                }, 500); // Slight delay to ensure layout is complete
+                // Safe Camera Centering: moveCamera(newLatLngZoom) is synchronous, layout size-independent,
+                // and 100% immune to IllegalArgumentExceptions from zero-measured layout passes.
+                mapLibreMap.moveCamera(CameraUpdateFactory.newLatLngZoom(midpoint, 14.5));
+
+                // Start the loop immediately
+                startMovementLoop();
             });
         });
     }
@@ -179,28 +178,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Programmatically generates a clean, premium, high-resolution circular pin/marker bitmap
-     * with a smooth white border and a soft drop shadow.
+     * Programmatically generates a premium, high-resolution circular GPS beacon bitmap
+     * with an outer drop shadow, a white border, a main color ring, and a bright white core dot.
      */
     private Bitmap createMarkerBitmap(int color) {
-        int size = 64;
+        int size = 128;
         Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
         Paint paint = new Paint();
         paint.setAntiAlias(true);
 
-        // Draw soft drop shadow
-        paint.setColor(Color.parseColor("#33000000"));
-        canvas.drawCircle(size / 2f, size / 2f + 4, size / 2.4f, paint);
+        // 1. Shadow (Soft Black)
+        paint.setColor(Color.parseColor("#40000000"));
+        canvas.drawCircle(size / 2f, size / 2f + 8, size / 2.4f, paint);
 
-        // Draw outer white circle
+        // 2. Outer border (Pure White)
         paint.setColor(Color.WHITE);
         canvas.drawCircle(size / 2f, size / 2f, size / 2.4f, paint);
 
-        // Draw inner colored circle
+        // 3. Colored Core
         paint.setColor(color);
         canvas.drawCircle(size / 2f, size / 2f, size / 3.4f, paint);
+
+        // 4. Center Dot (Pure White for premium glowing appearance)
+        paint.setColor(Color.WHITE);
+        canvas.drawCircle(size / 2f, size / 2f, size / 8f, paint);
 
         return bitmap;
     }
