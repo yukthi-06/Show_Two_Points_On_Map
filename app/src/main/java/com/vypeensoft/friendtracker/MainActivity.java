@@ -65,24 +65,21 @@ public class MainActivity extends AppCompatActivity {
                 // Random angle/bearing in radians
                 double angle = Math.random() * 2 * Math.PI;
 
-                // 1.0 Kilometer offset calculation:
-                // 1 degree latitude is exactly ~111.12 km.
-                // 1 km latitude = 1.0 / 111.12 degrees.
-                // 1 km longitude = (1.0 / 111.12) / cos(latitude) degrees.
-                double distanceKm = 1.0;
-                double deltaLat = (distanceKm / 111.12) * Math.cos(angle);
-                double deltaLon = ((distanceKm / 111.12) * Math.sin(angle)) / Math.cos(Math.toRadians(baseLat));
+                // Equilateral Triangle setup for 3 friends with exactly 1005 meters (1.005 km) side length:
+                // This targets the exact center of the requested [1000, 1010] meters constraint range!
+                double sKm = 1.005; // 1005 meters
+                double deltaLat = (sKm / 111.12) * Math.cos(angle);
+                double deltaLon = ((sKm / 111.12) * Math.sin(angle)) / Math.cos(Math.toRadians(baseLat));
 
                 redLatLng = new LatLng(baseLat, baseLon);
                 greenLatLng = new LatLng(baseLat + deltaLat, baseLon + deltaLon);
 
                 // Math for Blue Point: Place it perpendicular to the Red-Green line from their midpoint
-                // by 600 meters. The distance to both Red and Green will be sqrt(500^2 + 600^2) = ~781 meters
-                // (which is perfectly between 500 meters and 1000 meters!).
+                // at a distance of s * sqrt(3) / 2 (height of equilateral triangle) = ~870.35 meters
                 double midLat = baseLat + deltaLat / 2.0;
                 double midLon = baseLon + deltaLon / 2.0;
 
-                double perpDistanceKm = 0.6; // 600 meters
+                double perpDistanceKm = sKm * 0.866025; // s * sqrt(3)/2
                 double perpAngle = angle + Math.PI / 2.0; // Perpendicular bearing (rotated by 90 degrees)
                 double perpLat = (perpDistanceKm / 111.12) * Math.cos(perpAngle);
                 double perpLon = ((perpDistanceKm / 111.12) * Math.sin(perpAngle)) / Math.cos(Math.toRadians(midLat));
@@ -98,17 +95,17 @@ public class MainActivity extends AppCompatActivity {
                 // Add standard built-in Markers to the Map
                 redMarker = mapLibreMap.addMarker(new MarkerOptions()
                         .position(redLatLng)
-                        .title("Red Point (~1km)")
+                        .title("Red Friend")
                         .icon(redIcon));
 
                 greenMarker = mapLibreMap.addMarker(new MarkerOptions()
                         .position(greenLatLng)
-                        .title("Green Point (~1km)")
+                        .title("Green Friend")
                         .icon(greenIcon));
 
                 blueMarker = mapLibreMap.addMarker(new MarkerOptions()
                         .position(blueLatLng)
-                        .title("Blue Point (~781m)")
+                        .title("Blue Friend")
                         .icon(blueIcon));
 
                 // Calculate the midpoint between the points for the camera positioning
@@ -127,8 +124,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Spawns a repeating 1-second loop that moves all three coordinates by exactly 15 meters
-     * in a random direction, maintaining their relative separations.
+     * Spawns a repeating 1-second loop where each marker moves in a completely independent
+     * random direction by 1 to 5 meters. Lightweight PBD spring corrections resolve
+     * the coordinate states to guarantee all pairwise distances stay strictly within [1000, 1010] meters.
      */
     private void startMovementLoop() {
         if (movementRunnable != null) return; // Already running
@@ -138,30 +136,59 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 if (isDestroyed() || redMarker == null || greenMarker == null || blueMarker == null) return;
 
-                // Move by 15 meters in a random direction (perfectly visible real-time movement step size)
-                double angle = Math.random() * 2 * Math.PI;
+                // 1. Red Independent Random Walk (1 to 5 meters)
+                double stepR = 1.0 + Math.random() * 4.0; // 1 to 5 meters
+                double angleR = Math.random() * 2 * Math.PI;
+                double deltaLatR = (stepR / 1000.0 / 111.12) * Math.cos(angleR);
+                double deltaLonR = ((stepR / 1000.0 / 111.12) * Math.sin(angleR)) / Math.cos(Math.toRadians(redLatLng.getLatitude()));
+                redLatLng = new LatLng(redLatLng.getLatitude() + deltaLatR, redLatLng.getLongitude() + deltaLonR);
 
-                // 15 meters = 0.015 kilometer (highly visible ~2.2 pixels shift per second at zoom 14.5)
-                double distanceKm = 0.015; 
-                double avgLat = (redLatLng.getLatitude() + greenLatLng.getLatitude()) / 2.0;
-                double deltaLat = (distanceKm / 111.12) * Math.cos(angle);
-                double deltaLon = ((distanceKm / 111.12) * Math.sin(angle)) / Math.cos(Math.toRadians(avgLat));
+                // 2. Green Independent Random Walk (1 to 5 meters)
+                double stepG = 1.0 + Math.random() * 4.0; // 1 to 5 meters
+                double angleG = Math.random() * 2 * Math.PI;
+                double deltaLatG = (stepG / 1000.0 / 111.12) * Math.cos(angleG);
+                double deltaLonG = ((stepG / 1000.0 / 111.12) * Math.sin(angleG)) / Math.cos(Math.toRadians(greenLatLng.getLatitude()));
+                greenLatLng = new LatLng(greenLatLng.getLatitude() + deltaLatG, greenLatLng.getLongitude() + deltaLonG);
 
-                // Translate all three coordinates by the exact same delta vector to preserve their relative distances
-                redLatLng = new LatLng(redLatLng.getLatitude() + deltaLat, redLatLng.getLongitude() + deltaLon);
-                greenLatLng = new LatLng(greenLatLng.getLatitude() + deltaLat, greenLatLng.getLongitude() + deltaLon);
-                blueLatLng = new LatLng(blueLatLng.getLatitude() + deltaLat, blueLatLng.getLongitude() + deltaLon);
+                // 3. Blue Independent Random Walk (1 to 5 meters)
+                double stepB = 1.0 + Math.random() * 4.0; // 1 to 5 meters
+                double angleB = Math.random() * 2 * Math.PI;
+                double deltaLatB = (stepB / 1000.0 / 111.12) * Math.cos(angleB);
+                double deltaLonB = ((stepB / 1000.0 / 111.12) * Math.sin(angleB)) / Math.cos(Math.toRadians(blueLatLng.getLatitude()));
+                blueLatLng = new LatLng(blueLatLng.getLatitude() + deltaLatB, blueLatLng.getLongitude() + deltaLonB);
+
+                // 4. Apply Position-Based Dynamics (PBD) Spring Relaxation to satisfy distance constraints
+                // We run 3 fast iterations to converge distances beautifully to the target of 1005 meters.
+                for (int i = 0; i < 3; i++) {
+                    LatLng[] rg = adjustPair(redLatLng, greenLatLng, 1005.0);
+                    redLatLng = rg[0];
+                    greenLatLng = rg[1];
+
+                    LatLng[] gb = adjustPair(greenLatLng, blueLatLng, 1005.0);
+                    greenLatLng = gb[0];
+                    blueLatLng = gb[1];
+
+                    LatLng[] br = adjustPair(blueLatLng, redLatLng, 1005.0);
+                    blueLatLng = br[0];
+                    redLatLng = br[1];
+                }
 
                 // Update marker positions instantly on the Map
                 redMarker.setPosition(redLatLng);
                 greenMarker.setPosition(greenLatLng);
                 blueMarker.setPosition(blueLatLng);
 
-                // Force layout redraw to guarantee coordinates render instantly on the screen
+                // Force layout redraw to render instantly
                 mapView.invalidate();
 
-                // Log diagnostic coordinates to Logcat to easily monitor real-time active loop ticks
-                android.util.Log.d("FriendTracker", "Loop tick coordinate shift. Red: " + redLatLng.toString());
+                // Calculate current real-world distances for diagnostic verification
+                double dRG = calculateDistance(redLatLng, greenLatLng);
+                double dGB = calculateDistance(greenLatLng, blueLatLng);
+                double dBR = calculateDistance(blueLatLng, redLatLng);
+
+                android.util.Log.d("FriendTracker", String.format(
+                        "Tick distances: Red-Green=%.2fm, Green-Blue=%.2fm, Blue-Red=%.2fm", dRG, dGB, dBR
+                ));
 
                 // Repeat every 1 second
                 movementHandler.postDelayed(this, 1000L);
@@ -169,6 +196,49 @@ public class MainActivity extends AppCompatActivity {
         };
 
         movementHandler.post(movementRunnable);
+    }
+
+    /**
+     * High-Accuracy Haversine formula to compute geodesic distance between two points in meters.
+     */
+    private double calculateDistance(LatLng p1, LatLng p2) {
+        double R = 6371000; // Earth's radius in meters
+        double lat1 = Math.toRadians(p1.getLatitude());
+        double lon1 = Math.toRadians(p1.getLongitude());
+        double lat2 = Math.toRadians(p2.getLatitude());
+        double lon2 = Math.toRadians(p2.getLongitude());
+
+        double dLat = lat2 - lat1;
+        double dLon = lon2 - lon1;
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                   Math.cos(lat1) * Math.cos(lat2) *
+                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c;
+    }
+
+    /**
+     * Spring projection to shift a pair of coordinates towards a target distance in meters.
+     */
+    private LatLng[] adjustPair(LatLng p1, LatLng p2, double targetDistance) {
+        double currentDistance = calculateDistance(p1, p2);
+        if (currentDistance == 0) return new LatLng[]{p1, p2};
+
+        // Difference in meters
+        double diff = currentDistance - targetDistance;
+        
+        // We move each coordinate by half the error ratio
+        double factor = (diff / 2.0) / currentDistance;
+
+        double dLat = p2.getLatitude() - p1.getLatitude();
+        double dLon = p2.getLongitude() - p1.getLongitude();
+
+        LatLng newP1 = new LatLng(p1.getLatitude() + dLat * factor, p1.getLongitude() + dLon * factor);
+        LatLng newP2 = new LatLng(p2.getLatitude() - dLat * factor, p2.getLongitude() - dLon * factor);
+
+        return new LatLng[]{newP1, newP2};
     }
 
     /**
@@ -182,11 +252,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Programmatically draws a beautiful classic teardrop vector map pin with:
-     * 1. A soft drop shadow under the pointer tip.
-     * 2. A crisp white outer pointer border.
-     * 3. A solid colored inner pointer core.
-     * 4. A glowing white central dot inside the head of the pin.
+     * Programmatically draws a beautiful classic teardrop vector map pin.
      */
     private Bitmap createTeardropMarkerBitmap(int color) {
         int size = 128;
