@@ -36,6 +36,11 @@ public class MainActivity extends AppCompatActivity {
     private Marker greenMarker;
     private Marker blueMarker;
 
+    // Persistent heading directions for each friend in radians (allows actual traveling across the map)
+    private double headingRed = Math.random() * 2 * Math.PI;
+    private double headingGreen = Math.random() * 2 * Math.PI;
+    private double headingBlue = Math.random() * 2 * Math.PI;
+
     // Movement Loop Handler
     private final android.os.Handler movementHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     private Runnable movementRunnable;
@@ -65,9 +70,9 @@ public class MainActivity extends AppCompatActivity {
                 // Random angle/bearing in radians
                 double angle = Math.random() * 2 * Math.PI;
 
-                // Equilateral Triangle setup for 3 friends with exactly 1005 meters (1.005 km) side length:
-                // This targets the exact center of the requested [1000, 1010] meters constraint range!
-                double sKm = 1.005; // 1005 meters
+                // Equilateral Triangle setup for 3 friends with exactly 1050 meters (1.050 km) side length:
+                // This targets the exact center of the requested [1000, 1100] meters constraint range!
+                double sKm = 1.050; // 1050 meters
                 double deltaLat = (sKm / 111.12) * Math.cos(angle);
                 double deltaLon = ((sKm / 111.12) * Math.sin(angle)) / Math.cos(Math.toRadians(baseLat));
 
@@ -75,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 greenLatLng = new LatLng(baseLat + deltaLat, baseLon + deltaLon);
 
                 // Math for Blue Point: Place it perpendicular to the Red-Green line from their midpoint
-                // at a distance of s * sqrt(3) / 2 (height of equilateral triangle) = ~870.35 meters
+                // at a distance of s * sqrt(3) / 2 (height of equilateral triangle) = ~909.33 meters
                 double midLat = baseLat + deltaLat / 2.0;
                 double midLon = baseLon + deltaLon / 2.0;
 
@@ -124,9 +129,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Spawns a repeating 1-second loop where each marker moves in a completely independent
-     * random direction by 1 to 5 meters. Lightweight PBD spring corrections resolve
-     * the coordinate states to guarantee all pairwise distances stay strictly within [1000, 1010] meters.
+     * Spawns a repeating 1-second loop where each marker moves in a persistent, correlated
+     * random direction by 1 to 5 meters. Dynamic group steering keeps the friends together
+     * while PBD inequality range constraints guarantee mutual distances stay strictly in [1000, 1100] meters.
      */
     private void startMovementLoop() {
         if (movementRunnable != null) return; // Already running
@@ -136,39 +141,69 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 if (isDestroyed() || redMarker == null || greenMarker == null || blueMarker == null) return;
 
-                // 1. Red Independent Random Walk (1 to 5 meters)
+                // 1. Calculate current group center point
+                double centerLat = (redLatLng.getLatitude() + greenLatLng.getLatitude() + blueLatLng.getLatitude()) / 3.0;
+                double centerLon = (redLatLng.getLongitude() + greenLatLng.getLongitude() + blueLatLng.getLongitude()) / 3.0;
+                LatLng centerPoint = new LatLng(centerLat, centerLon);
+
+                // 2. Red Heading Steering: slightly perturb and steer towards/away from center
+                double distR = calculateDistance(redLatLng, centerPoint);
+                double bearingR = calculateBearing(redLatLng, centerPoint);
+                headingRed += (Math.random() - 0.5) * Math.toRadians(30); // Perturb by +/- 15 degrees
+                if (distR > 620.0) {
+                    headingRed = blendAngles(headingRed, bearingR, 0.15); // Steer back towards center if too far
+                } else if (distR < 580.0) {
+                    headingRed = blendAngles(headingRed, bearingR + Math.PI, 0.15); // Steer away if too close
+                }
+
+                // 3. Green Heading Steering: slightly perturb and steer towards/away from center
+                double distG = calculateDistance(greenLatLng, centerPoint);
+                double bearingG = calculateBearing(greenLatLng, centerPoint);
+                headingGreen += (Math.random() - 0.5) * Math.toRadians(30); // Perturb by +/- 15 degrees
+                if (distG > 620.0) {
+                    headingGreen = blendAngles(headingGreen, bearingG, 0.15); // Steer back towards center
+                } else if (distG < 580.0) {
+                    headingGreen = blendAngles(headingGreen, bearingG + Math.PI, 0.15); // Steer away
+                }
+
+                // 4. Blue Heading Steering: slightly perturb and steer towards/away from center
+                double distB = calculateDistance(blueLatLng, centerPoint);
+                double bearingB = calculateBearing(blueLatLng, centerPoint);
+                headingBlue += (Math.random() - 0.5) * Math.toRadians(30); // Perturb by +/- 15 degrees
+                if (distB > 620.0) {
+                    headingBlue = blendAngles(headingBlue, bearingB, 0.15); // Steer back towards center
+                } else if (distB < 580.0) {
+                    headingBlue = blendAngles(headingBlue, bearingB + Math.PI, 0.15); // Steer away
+                }
+
+                // 5. Move all three friends by a random step of 1 to 5 meters along their persistent headings
                 double stepR = 1.0 + Math.random() * 4.0; // 1 to 5 meters
-                double angleR = Math.random() * 2 * Math.PI;
-                double deltaLatR = (stepR / 1000.0 / 111.12) * Math.cos(angleR);
-                double deltaLonR = ((stepR / 1000.0 / 111.12) * Math.sin(angleR)) / Math.cos(Math.toRadians(redLatLng.getLatitude()));
+                double deltaLatR = (stepR / 1000.0 / 111.12) * Math.cos(headingRed);
+                double deltaLonR = ((stepR / 1000.0 / 111.12) * Math.sin(headingRed)) / Math.cos(Math.toRadians(redLatLng.getLatitude()));
                 redLatLng = new LatLng(redLatLng.getLatitude() + deltaLatR, redLatLng.getLongitude() + deltaLonR);
 
-                // 2. Green Independent Random Walk (1 to 5 meters)
                 double stepG = 1.0 + Math.random() * 4.0; // 1 to 5 meters
-                double angleG = Math.random() * 2 * Math.PI;
-                double deltaLatG = (stepG / 1000.0 / 111.12) * Math.cos(angleG);
-                double deltaLonG = ((stepG / 1000.0 / 111.12) * Math.sin(angleG)) / Math.cos(Math.toRadians(greenLatLng.getLatitude()));
+                double deltaLatG = (stepG / 1000.0 / 111.12) * Math.cos(headingGreen);
+                double deltaLonG = ((stepG / 1000.0 / 111.12) * Math.sin(headingGreen)) / Math.cos(Math.toRadians(greenLatLng.getLatitude()));
                 greenLatLng = new LatLng(greenLatLng.getLatitude() + deltaLatG, greenLatLng.getLongitude() + deltaLonG);
 
-                // 3. Blue Independent Random Walk (1 to 5 meters)
                 double stepB = 1.0 + Math.random() * 4.0; // 1 to 5 meters
-                double angleB = Math.random() * 2 * Math.PI;
-                double deltaLatB = (stepB / 1000.0 / 111.12) * Math.cos(angleB);
-                double deltaLonB = ((stepB / 1000.0 / 111.12) * Math.sin(angleB)) / Math.cos(Math.toRadians(blueLatLng.getLatitude()));
+                double deltaLatB = (stepB / 1000.0 / 111.12) * Math.cos(headingBlue);
+                double deltaLonB = ((stepB / 1000.0 / 111.12) * Math.sin(headingBlue)) / Math.cos(Math.toRadians(blueLatLng.getLatitude()));
                 blueLatLng = new LatLng(blueLatLng.getLatitude() + deltaLatB, blueLatLng.getLongitude() + deltaLonB);
 
-                // 4. Apply Position-Based Dynamics (PBD) Spring Relaxation to satisfy distance constraints
-                // We run 3 fast iterations to converge distances beautifully to the target of 1005 meters.
+                // 6. Apply PBD Inequality Range Constraints (1000 meters to 1100 meters)
+                // If distances are inside [1000m, 1100m], the solver does absolutely nothing, letting them wander freely.
                 for (int i = 0; i < 3; i++) {
-                    LatLng[] rg = adjustPair(redLatLng, greenLatLng, 1005.0);
+                    LatLng[] rg = adjustPairRange(redLatLng, greenLatLng, 1000.0, 1100.0);
                     redLatLng = rg[0];
                     greenLatLng = rg[1];
 
-                    LatLng[] gb = adjustPair(greenLatLng, blueLatLng, 1005.0);
+                    LatLng[] gb = adjustPairRange(greenLatLng, blueLatLng, 1000.0, 1100.0);
                     greenLatLng = gb[0];
                     blueLatLng = gb[1];
 
-                    LatLng[] br = adjustPair(blueLatLng, redLatLng, 1005.0);
+                    LatLng[] br = adjustPairRange(blueLatLng, redLatLng, 1000.0, 1100.0);
                     blueLatLng = br[0];
                     redLatLng = br[1];
                 }
@@ -199,6 +234,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Blends two angles smoothly in the shortest angular direction, handling boundary wrapping around -PI and +PI.
+     */
+    private double blendAngles(double current, double target, double ratio) {
+        double diff = target - current;
+        while (diff < -Math.PI) diff += 2 * Math.PI;
+        while (diff > Math.PI) diff -= 2 * Math.PI;
+        return current + ratio * diff;
+    }
+
+    /**
+     * High-Accuracy bearing calculation in radians from p1 to p2.
+     */
+    private double calculateBearing(LatLng p1, LatLng p2) {
+        double lat1 = Math.toRadians(p1.getLatitude());
+        double lon1 = Math.toRadians(p1.getLongitude());
+        double lat2 = Math.toRadians(p2.getLatitude());
+        double lon2 = Math.toRadians(p2.getLongitude());
+
+        double dLon = lon2 - lon1;
+        double y = Math.sin(dLon) * Math.cos(lat2);
+        double x = Math.cos(lat1) * Math.sin(lat2) -
+                   Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+
+        return Math.atan2(y, x);
+    }
+
+    /**
      * High-Accuracy Haversine formula to compute geodesic distance between two points in meters.
      */
     private double calculateDistance(LatLng p1, LatLng p2) {
@@ -220,14 +282,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Spring projection to shift a pair of coordinates towards a target distance in meters.
+     * PBD Inequality Range constraint relaxation. Adjusts coordinates only if they breach range boundaries.
      */
-    private LatLng[] adjustPair(LatLng p1, LatLng p2, double targetDistance) {
+    private LatLng[] adjustPairRange(LatLng p1, LatLng p2, double minDistance, double maxDistance) {
         double currentDistance = calculateDistance(p1, p2);
         if (currentDistance == 0) return new LatLng[]{p1, p2};
 
-        // Difference in meters
-        double diff = currentDistance - targetDistance;
+        double diff = 0;
+        if (currentDistance < minDistance) {
+            diff = currentDistance - minDistance; // Negative diff will push them apart
+        } else if (currentDistance > maxDistance) {
+            diff = currentDistance - maxDistance; // Positive diff will pull them together
+        } else {
+            return new LatLng[]{p1, p2}; // Safe range, no action needed!
+        }
         
         // We move each coordinate by half the error ratio
         double factor = (diff / 2.0) / currentDistance;
