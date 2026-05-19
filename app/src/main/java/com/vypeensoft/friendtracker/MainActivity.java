@@ -729,20 +729,32 @@ public class MainActivity extends AppCompatActivity {
         layout.setOrientation(android.widget.LinearLayout.VERTICAL);
         layout.setPadding(48, 36, 48, 36);
 
-        android.widget.TextView label = new android.widget.TextView(this);
-        label.setText("GPS Files Polling Interval (seconds)");
-        label.setTextColor(Color.parseColor("#1976D2"));
-        label.setTextSize(14);
-        label.setTypeface(null, android.graphics.Typeface.BOLD);
-        label.setPadding(0, 0, 0, 8);
-        layout.addView(label);
+        // Section Title: "GPS Configuration" styled like reference sub-heading
+        android.widget.TextView sectionTitle = new android.widget.TextView(this);
+        sectionTitle.setText("GPS Configuration");
+        sectionTitle.setTextSize(16);
+        sectionTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+        sectionTitle.setTextColor(Color.parseColor("#1976D2"));
+        sectionTitle.setPadding(0, 0, 0, 16);
+        layout.addView(sectionTitle);
 
-        android.widget.EditText input = new android.widget.EditText(this);
+        // Create TextInputLayout and TextInputEditText programmatically to mirror reference styling
+        com.google.android.material.textfield.TextInputLayout textInputLayout = 
+            new com.google.android.material.textfield.TextInputLayout(this);
+        textInputLayout.setHint("GPS Files Polling Interval (seconds)");
+        textInputLayout.setHelperText("Enter a Polling Interval (e.g. 1, 5 or 10 seconds).");
+        textInputLayout.setBoxBackgroundMode(com.google.android.material.textfield.TextInputLayout.BOX_BACKGROUND_OUTLINE);
+        textInputLayout.setBoxStrokeColor(Color.parseColor("#1976D2"));
+        
+        com.google.android.material.textfield.TextInputEditText input = 
+            new com.google.android.material.textfield.TextInputEditText(textInputLayout.getContext());
         android.content.SharedPreferences prefs = getSharedPreferences(MatrixClient.PREFS_NAME, MODE_PRIVATE);
         int currentInterval = prefs.getInt("polling_interval", 1);
         input.setText(String.valueOf(currentInterval));
         input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-        layout.addView(input);
+        
+        textInputLayout.addView(input);
+        layout.addView(textInputLayout);
 
         builder.setView(layout);
         builder.setPositiveButton("Save", (dialog, which) -> {
