@@ -12,3 +12,4 @@ local.properties
 *.class
 *.bin
 tmp
+app/build/

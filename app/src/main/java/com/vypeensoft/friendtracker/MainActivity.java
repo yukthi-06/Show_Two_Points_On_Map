@@ -91,11 +91,11 @@ public class MainActivity extends AppCompatActivity {
 
                 blueLatLng = new LatLng(midLat + perpLat, midLon + perpLon);
 
-                // Create custom icons from our programmatically generated teardrop pin vector bitmaps
+                // Create custom icons from our programmatically generated teardrop pin vector bitmaps with names
                 IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
-                Icon redIcon = iconFactory.fromBitmap(createTeardropMarkerBitmap(Color.parseColor("#E53935"))); // Crimson Red Tint
-                Icon greenIcon = iconFactory.fromBitmap(createTeardropMarkerBitmap(Color.parseColor("#4CAF50"))); // Vibrant Green Tint
-                Icon blueIcon = iconFactory.fromBitmap(createTeardropMarkerBitmap(Color.parseColor("#2196F3"))); // Blue Tint
+                Icon redIcon = iconFactory.fromBitmap(createTeardropMarkerBitmap(Color.parseColor("#E53935"), "Red")); // Crimson Red Tint
+                Icon greenIcon = iconFactory.fromBitmap(createTeardropMarkerBitmap(Color.parseColor("#4CAF50"), "Green")); // Vibrant Green Tint
+                Icon blueIcon = iconFactory.fromBitmap(createTeardropMarkerBitmap(Color.parseColor("#2196F3"), "Blue")); // Blue Tint
 
                 // Add standard built-in Markers to the Map
                 redMarker = mapLibreMap.addMarker(new MarkerOptions()
@@ -320,11 +320,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Programmatically draws a beautiful classic teardrop vector map pin.
+     * Programmatically draws a beautiful classic teardrop vector map pin with a dynamic floating name badge.
      */
-    private Bitmap createTeardropMarkerBitmap(int color) {
-        int size = 128;
-        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+    private Bitmap createTeardropMarkerBitmap(int color, String text) {
+        int width = 160;
+        int height = 192;
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
         Paint paint = new Paint();
@@ -332,30 +333,80 @@ public class MainActivity extends AppCompatActivity {
         paint.setStyle(Paint.Style.FILL);
 
         // 1. Draw soft drop shadow under the tip
-        paint.setColor(Color.parseColor("#33000000"));
-        canvas.drawCircle(64, 110, 14, paint);
+        paint.setColor(Color.parseColor("#22000000"));
+        canvas.drawOval(new RectF(80 - 18, 160 - 4, 80 + 18, 160 + 4), paint);
 
         // 2. Draw white outer pin border
         paint.setColor(Color.WHITE);
         Path outerPath = new Path();
-        outerPath.moveTo(64, 110); // Tip at bottom
-        outerPath.lineTo(30, 50); // Left tangent
-        outerPath.arcTo(new RectF(30, 12, 98, 80), 150, 240, false); // Top circle
+        outerPath.moveTo(80, 160); // Tip at bottom
+        outerPath.lineTo(46, 100); // Left tangent
+        outerPath.arcTo(new RectF(46, 62, 114, 130), 150, 240, false); // Top circle
         outerPath.close();
         canvas.drawPath(outerPath, paint);
 
         // 3. Draw colored inner pin core
         paint.setColor(color);
         Path innerPath = new Path();
-        innerPath.moveTo(64, 102); // Tip at bottom
-        innerPath.lineTo(36, 52); // Left tangent
-        innerPath.arcTo(new RectF(36, 18, 92, 74), 150, 240, false); // Top circle
+        innerPath.moveTo(80, 152); // Tip at bottom
+        innerPath.lineTo(52, 102); // Left tangent
+        innerPath.arcTo(new RectF(52, 68, 108, 124), 150, 240, false); // Top circle
         innerPath.close();
         canvas.drawPath(innerPath, paint);
 
         // 4. Draw central white glowing dot inside the head of the pin
         paint.setColor(Color.WHITE);
-        canvas.drawCircle(64, 46, 12, paint);
+        canvas.drawCircle(80, 96, 12, paint);
+
+        // 5. Draw connecting line/stem from capsule to the pin head top
+        Paint connectorPaint = new Paint();
+        connectorPaint.setAntiAlias(true);
+        connectorPaint.setStyle(Paint.Style.STROKE);
+        connectorPaint.setStrokeWidth(4.0f);
+        connectorPaint.setColor(color);
+        canvas.drawLine(80, 48, 80, 64, connectorPaint);
+
+        // 6. Draw name tag capsule
+        Paint textPaint = new Paint();
+        textPaint.setAntiAlias(true);
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(20);
+        textPaint.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD));
+        textPaint.setTextAlign(Paint.Align.CENTER);
+
+        float textWidth = textPaint.measureText(text);
+        float capsuleWidth = textWidth + 28; // 14px padding on each side
+        float top = 12;
+        float bottom = 48;
+        float left = 80 - capsuleWidth / 2;
+        float right = 80 + capsuleWidth / 2;
+
+        // Capsule Shadow
+        Paint shadowPaint = new Paint();
+        shadowPaint.setAntiAlias(true);
+        shadowPaint.setStyle(Paint.Style.FILL);
+        shadowPaint.setColor(Color.parseColor("#25000000"));
+        canvas.drawRoundRect(left + 2, top + 2, right + 2, bottom + 2, 18, 18, shadowPaint);
+
+        // Capsule Background (Premium Dark Charcoal)
+        Paint bgPaint = new Paint();
+        bgPaint.setAntiAlias(true);
+        bgPaint.setStyle(Paint.Style.FILL);
+        bgPaint.setColor(Color.parseColor("#1E1E24"));
+        canvas.drawRoundRect(left, top, right, bottom, 18, 18, bgPaint);
+
+        // Capsule Border (Accent colored matching the pin)
+        Paint borderPaint = new Paint();
+        borderPaint.setAntiAlias(true);
+        borderPaint.setStyle(Paint.Style.STROKE);
+        borderPaint.setStrokeWidth(3.0f);
+        borderPaint.setColor(color);
+        canvas.drawRoundRect(left, top, right, bottom, 18, 18, borderPaint);
+
+        // Capsule Text (White, perfectly vertically centered)
+        Paint.FontMetrics fm = textPaint.getFontMetrics();
+        float textY = (top + bottom) / 2 - (fm.ascent + fm.descent) / 2;
+        canvas.drawText(text, 80, textY, textPaint);
 
         return bitmap;
     }
