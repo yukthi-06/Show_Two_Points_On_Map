@@ -657,8 +657,9 @@ public class MainActivity extends AppCompatActivity {
 
         android.widget.TextView label = new android.widget.TextView(this);
         label.setText("GPS Files Polling Interval (seconds)");
-        label.setTextColor(Color.parseColor("#78909C"));
-        label.setTextSize(13);
+        label.setTextColor(Color.parseColor("#1A237E"));
+        label.setTextSize(14);
+        label.setTypeface(null, android.graphics.Typeface.BOLD);
         label.setPadding(0, 0, 0, 8);
         layout.addView(label);
 
@@ -689,8 +690,9 @@ public class MainActivity extends AppCompatActivity {
     private android.widget.TextView createLabel(String text) {
         android.widget.TextView label = new android.widget.TextView(this);
         label.setText(text);
-        label.setTextColor(Color.parseColor("#78909C"));
-        label.setTextSize(13);
+        label.setTextColor(Color.parseColor("#1A237E"));
+        label.setTextSize(14);
+        label.setTypeface(null, android.graphics.Typeface.BOLD);
         label.setPadding(0, 16, 0, 4);
         return label;
     }
@@ -698,7 +700,6 @@ public class MainActivity extends AppCompatActivity {
     private android.widget.EditText createInput(String value) {
         android.widget.EditText input = new android.widget.EditText(this);
         input.setText(value);
-        input.setTextColor(Color.parseColor("#263238"));
         input.setTextSize(16);
         return input;
     }
@@ -812,7 +813,7 @@ public class MainActivity extends AppCompatActivity {
         android.widget.TextView headActive = new android.widget.TextView(this);
         headActive.setText("Active");
         headActive.setTextSize(14);
-        headActive.setTextColor(Color.parseColor("#37474F"));
+        headActive.setTextColor(Color.parseColor("#1A237E"));
         headActive.setTypeface(null, android.graphics.Typeface.BOLD);
         headActive.setLayoutParams(new android.widget.LinearLayout.LayoutParams(120, -2));
         headers.addView(headActive);
@@ -820,7 +821,7 @@ public class MainActivity extends AppCompatActivity {
         android.widget.TextView headName = new android.widget.TextView(this);
         headName.setText("Room Name");
         headName.setTextSize(14);
-        headName.setTextColor(Color.parseColor("#37474F"));
+        headName.setTextColor(Color.parseColor("#1A237E"));
         headName.setTypeface(null, android.graphics.Typeface.BOLD);
         headName.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0, -2, 1.0f));
         headers.addView(headName);
@@ -828,7 +829,7 @@ public class MainActivity extends AppCompatActivity {
         android.widget.TextView headId = new android.widget.TextView(this);
         headId.setText("Room ID");
         headId.setTextSize(14);
-        headId.setTextColor(Color.parseColor("#37474F"));
+        headId.setTextColor(Color.parseColor("#1A237E"));
         headId.setTypeface(null, android.graphics.Typeface.BOLD);
         headId.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0, -2, 1.2f));
         headers.addView(headId);
@@ -906,14 +907,13 @@ public class MainActivity extends AppCompatActivity {
             android.widget.TextView textName = new android.widget.TextView(this);
             textName.setText(room.getName());
             textName.setTextSize(14);
-            textName.setTextColor(Color.parseColor("#263238"));
+            textName.setTypeface(null, android.graphics.Typeface.BOLD);
             textName.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0, -2, 1.0f));
             row.addView(textName);
 
             android.widget.TextView textId = new android.widget.TextView(this);
             textId.setText(room.getRoomId());
             textId.setTextSize(13);
-            textId.setTextColor(Color.parseColor("#546E7A"));
             textId.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0, -2, 1.2f));
             row.addView(textId);
 

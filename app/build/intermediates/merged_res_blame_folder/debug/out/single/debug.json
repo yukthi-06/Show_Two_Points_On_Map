@@ -4,6 +4,10 @@
         "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\xml\\backup_rules.xml"
     },
     {
+        "merged": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-merged_res-35:\\drawable_bg_floating_button.xml.flat",
+        "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\drawable\\bg_floating_button.xml"
+    },
+    {
         "merged": "com.vypeensoft.friendtracker.app-merged_res-35:/layout_activity_main.xml.flat",
         "source": "com.vypeensoft.friendtracker.app-main-37:/layout/activity_main.xml"
     },
@@ -16,12 +20,24 @@
         "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\drawable\\ic_friend_marker.png"
     },
     {
-        "merged": "com.vypeensoft.friendtracker.app-merged_res-35:/drawable_bg_floating_button.xml.flat",
-        "source": "com.vypeensoft.friendtracker.app-main-37:/drawable/bg_floating_button.xml"
+        "merged": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-merged_res-35:\\drawable_ic_credentials.xml.flat",
+        "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\drawable\\ic_credentials.xml"
+    },
+    {
+        "merged": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-merged_res-35:\\drawable_ic_rooms.xml.flat",
+        "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\drawable\\ic_rooms.xml"
+    },
+    {
+        "merged": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-merged_res-35:\\drawable_ic_settings.xml.flat",
+        "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\drawable\\ic_settings.xml"
     },
     {
         "merged": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-merged_res-35:\\drawable_ic_me_marker.png.flat",
         "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\drawable\\ic_me_marker.png"
+    },
+    {
+        "merged": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-merged_res-35:\\drawable_ic_hamburger.xml.flat",
+        "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\drawable\\ic_hamburger.xml"
     },
     {
         "merged": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-merged_res-35:\\drawable_app_icon.png.flat",
@@ -36,31 +52,15 @@
         "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\drawable\\friend_marker.xml"
     },
     {
-        "merged": "com.vypeensoft.friendtracker.app-merged_res-35:/drawable_ic_about.xml.flat",
-        "source": "com.vypeensoft.friendtracker.app-main-37:/drawable/ic_about.xml"
+        "merged": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-merged_res-35:\\drawable_ic_about.xml.flat",
+        "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\drawable\\ic_about.xml"
     },
     {
-        "merged": "com.vypeensoft.friendtracker.app-merged_res-35:/drawable_ic_hamburger.xml.flat",
-        "source": "com.vypeensoft.friendtracker.app-main-37:/drawable/ic_hamburger.xml"
-    },
-    {
-        "merged": "com.vypeensoft.friendtracker.app-merged_res-35:/drawable_ic_rooms.xml.flat",
-        "source": "com.vypeensoft.friendtracker.app-main-37:/drawable/ic_rooms.xml"
-    },
-    {
-        "merged": "com.vypeensoft.friendtracker.app-merged_res-35:/drawable_ic_credentials.xml.flat",
-        "source": "com.vypeensoft.friendtracker.app-main-37:/drawable/ic_credentials.xml"
+        "merged": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-merged_res-35:\\drawable_ic_help.xml.flat",
+        "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\drawable\\ic_help.xml"
     },
     {
         "merged": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-merged_res-35:\\layout_activity_main.xml.flat",
         "source": "C:\\Users\\ShibuPC\\.gradle\\daemon\\8.2\\com.vypeensoft.friendtracker.app-main-37:\\layout\\activity_main.xml"
-    },
-    {
-        "merged": "com.vypeensoft.friendtracker.app-merged_res-35:/drawable_ic_help.xml.flat",
-        "source": "com.vypeensoft.friendtracker.app-main-37:/drawable/ic_help.xml"
-    },
-    {
-        "merged": "com.vypeensoft.friendtracker.app-merged_res-35:/drawable_ic_settings.xml.flat",
-        "source": "com.vypeensoft.friendtracker.app-main-37:/drawable/ic_settings.xml"
     }
 ]

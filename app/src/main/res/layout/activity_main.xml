@@ -35,7 +35,7 @@
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="#121214"
+        android:background="#F8F9FA"
         android:orientation="vertical"
         android:clickable="true"
         android:focusable="true">
@@ -44,7 +44,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#1E1E24"
+            android:background="#1A237E"
             android:orientation="vertical"
             android:padding="24dp">
 
@@ -61,7 +61,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="GPS &amp; Matrix Integration"
-                android:textColor="#B0BEC5"
+                android:textColor="#C5CAE9"
                 android:textSize="13sp" />
         </LinearLayout>
 
@@ -93,14 +93,15 @@
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_settings" />
+                        android:src="@drawable/ic_settings"
+                        android:tint="#1A237E" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="24dp"
                         android:text="Settings"
-                        android:textColor="#ECEFF1"
+                        android:textColor="#212121"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -121,14 +122,15 @@
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_credentials" />
+                        android:src="@drawable/ic_credentials"
+                        android:tint="#1A237E" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="24dp"
                         android:text="Matrix Credentials"
-                        android:textColor="#ECEFF1"
+                        android:textColor="#212121"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -149,14 +151,15 @@
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_rooms" />
+                        android:src="@drawable/ic_rooms"
+                        android:tint="#1A237E" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="24dp"
                         android:text="Matrix Rooms"
-                        android:textColor="#ECEFF1"
+                        android:textColor="#212121"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -177,14 +180,15 @@
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_help" />
+                        android:src="@drawable/ic_help"
+                        android:tint="#1A237E" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="24dp"
                         android:text="Help"
-                        android:textColor="#ECEFF1"
+                        android:textColor="#212121"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -205,14 +209,15 @@
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_about" />
+                        android:src="@drawable/ic_about"
+                        android:tint="#1A237E" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="24dp"
                         android:text="About"
-                        android:textColor="#ECEFF1"
+                        android:textColor="#212121"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
