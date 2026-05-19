@@ -731,7 +731,7 @@ public class MainActivity extends AppCompatActivity {
 
         android.widget.TextView label = new android.widget.TextView(this);
         label.setText("GPS Files Polling Interval (seconds)");
-        label.setTextColor(Color.parseColor("#1A237E"));
+        label.setTextColor(Color.parseColor("#1976D2"));
         label.setTextSize(14);
         label.setTypeface(null, android.graphics.Typeface.BOLD);
         label.setPadding(0, 0, 0, 8);
@@ -764,7 +764,7 @@ public class MainActivity extends AppCompatActivity {
     private android.widget.TextView createLabel(String text) {
         android.widget.TextView label = new android.widget.TextView(this);
         label.setText(text);
-        label.setTextColor(Color.parseColor("#1A237E"));
+        label.setTextColor(Color.parseColor("#1976D2"));
         label.setTextSize(14);
         label.setTypeface(null, android.graphics.Typeface.BOLD);
         label.setPadding(0, 16, 0, 4);

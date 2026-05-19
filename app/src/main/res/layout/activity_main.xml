@@ -40,29 +40,37 @@
         android:clickable="true"
         android:focusable="true">
 
-        <!-- Drawer Header with Premium Branding -->
+        <!-- Drawer Header matching reference nav_header.xml -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#1A237E"
+            android:layout_height="176dp"
+            android:background="#1976D2"
+            android:gravity="bottom"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_mylocation"
+                android:tint="#FFFFFF"
+                android:paddingTop="8dp" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Friend Tracker"
                 android:textColor="#FFFFFF"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:paddingTop="8dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="GPS &amp; Matrix Integration"
-                android:textColor="#C5CAE9"
-                android:textSize="13sp" />
+                android:text="Track your friends in real-time"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
         </LinearLayout>
 
         <!-- Menu List Items -->
@@ -94,7 +102,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_settings"
-                        android:tint="#1A237E" />
+                        android:tint="#1976D2" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -123,7 +131,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_credentials"
-                        android:tint="#1A237E" />
+                        android:tint="#1976D2" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -152,7 +160,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_rooms"
-                        android:tint="#1A237E" />
+                        android:tint="#1976D2" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -181,7 +189,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_help"
-                        android:tint="#1A237E" />
+                        android:tint="#1976D2" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -210,7 +218,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_about"
-                        android:tint="#1A237E" />
+                        android:tint="#1976D2" />
 
                     <TextView
                         android:layout_width="wrap_content"
