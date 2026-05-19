@@ -798,13 +798,30 @@ public class MainActivity extends AppCompatActivity {
                 android.content.SharedPreferences prefs = getSharedPreferences(MatrixClient.PREFS_NAME, MODE_PRIVATE);
                 android.content.SharedPreferences.Editor editor = prefs.edit();
 
-                if (obj.has("matrix_homeserver")) editor.putString(MatrixClient.KEY_MATRIX_HOMESERVER, obj.getString("matrix_homeserver"));
-                if (obj.has("matrix_username")) editor.putString(MatrixClient.KEY_MATRIX_USERNAME, obj.getString("matrix_username"));
-                if (obj.has("matrix_password")) editor.putString(MatrixClient.KEY_MATRIX_PASSWORD, obj.getString("matrix_password"));
-                if (obj.has("matrix_token")) editor.putString(MatrixClient.KEY_MATRIX_TOKEN, obj.getString("matrix_token"));
-                if (obj.has("matrix_display_name")) editor.putString(MatrixClient.KEY_MATRIX_DISPLAY_NAME, obj.getString("matrix_display_name"));
+                if (obj.has("matrix_homeserver")) {
+                    try { editor.putString(MatrixClient.KEY_MATRIX_HOMESERVER, obj.getString("matrix_homeserver")); } catch (Exception ignored) {}
+                }
+                if (obj.has("matrix_username")) {
+                    try { editor.putString(MatrixClient.KEY_MATRIX_USERNAME, obj.getString("matrix_username")); } catch (Exception ignored) {}
+                }
+                if (obj.has("matrix_password")) {
+                    try { editor.putString(MatrixClient.KEY_MATRIX_PASSWORD, obj.getString("matrix_password")); } catch (Exception ignored) {}
+                }
+                if (obj.has("matrix_token")) {
+                    try { editor.putString(MatrixClient.KEY_MATRIX_TOKEN, obj.getString("matrix_token")); } catch (Exception ignored) {}
+                }
+                if (obj.has("matrix_display_name")) {
+                    try { editor.putString(MatrixClient.KEY_MATRIX_DISPLAY_NAME, obj.getString("matrix_display_name")); } catch (Exception ignored) {}
+                }
                 if (obj.has("matrix_polling_period")) {
-                    editor.putLong(MatrixClient.KEY_MATRIX_POLLING_PERIOD, obj.getLong("matrix_polling_period"));
+                    try {
+                        editor.putLong(MatrixClient.KEY_MATRIX_POLLING_PERIOD, obj.getLong("matrix_polling_period"));
+                    } catch (Exception e) {
+                        try {
+                            String periodStr = obj.getString("matrix_polling_period");
+                            editor.putLong(MatrixClient.KEY_MATRIX_POLLING_PERIOD, Long.parseLong(periodStr));
+                        } catch (Exception ignored) {}
+                    }
                 }
                 editor.apply();
                 if (matrixClient != null) {
@@ -839,14 +856,32 @@ public class MainActivity extends AppCompatActivity {
                 br.close();
 
                 org.json.JSONObject obj = new org.json.JSONObject(sb.toString());
-                if (obj.has("matrix_homeserver")) editHomeserver.setText(obj.getString("matrix_homeserver"));
-                if (obj.has("matrix_username")) editUsername.setText(obj.getString("matrix_username"));
-                if (obj.has("matrix_password")) editPassword.setText(obj.getString("matrix_password"));
-                if (obj.has("matrix_token")) editToken.setText(obj.getString("matrix_token"));
-                if (obj.has("matrix_display_name")) editDisplayName.setText(obj.getString("matrix_display_name"));
+                if (obj.has("matrix_homeserver")) {
+                    try { editHomeserver.setText(obj.getString("matrix_homeserver")); } catch (Exception ignored) {}
+                }
+                if (obj.has("matrix_username")) {
+                    try { editUsername.setText(obj.getString("matrix_username")); } catch (Exception ignored) {}
+                }
+                if (obj.has("matrix_password")) {
+                    try { editPassword.setText(obj.getString("matrix_password")); } catch (Exception ignored) {}
+                }
+                if (obj.has("matrix_token")) {
+                    try { editToken.setText(obj.getString("matrix_token")); } catch (Exception ignored) {}
+                }
+                if (obj.has("matrix_display_name")) {
+                    try { editDisplayName.setText(obj.getString("matrix_display_name")); } catch (Exception ignored) {}
+                }
                 if (obj.has("matrix_polling_period")) {
-                    long periodMs = obj.getLong("matrix_polling_period");
-                    editPollPeriod.setText(String.valueOf(periodMs / 1000L));
+                    try {
+                        long periodMs = obj.getLong("matrix_polling_period");
+                        editPollPeriod.setText(String.valueOf(periodMs / 1000L));
+                    } catch (Exception e) {
+                        try {
+                            String periodStr = obj.getString("matrix_polling_period");
+                            long periodMs = Long.parseLong(periodStr);
+                            editPollPeriod.setText(String.valueOf(periodMs / 1000L));
+                        } catch (Exception ignored) {}
+                    }
                 }
             } catch (Exception e) {
                 android.util.Log.e("FriendTracker", "Error loading credentials from JSON file", e);
