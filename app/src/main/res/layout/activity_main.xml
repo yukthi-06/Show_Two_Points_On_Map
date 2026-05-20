@@ -6,28 +6,53 @@
     android:layout_height="match_parent">
 
     <!-- Main Content Area -->
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
+        <!-- App Title Bar at the Top -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="#1976D2"
+            android:elevation="4dp">
+
+            <!-- Hamburger Button on Left -->
+            <ImageButton
+                android:id="@+id/btn_menu"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_hamburger"
+                android:tint="#FFFFFF"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                android:contentDescription="Menu Button" />
+
+            <!-- App Title beside burger menu -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/btn_menu"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="8dp"
+                android:text="Friend Tracker"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+        <!-- Map View taking remaining space -->
         <org.maplibre.android.maps.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-        <!-- Floating Hamburger Button -->
-        <ImageButton
-            android:id="@+id/btn_menu"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_margin="16dp"
-            android:src="@drawable/ic_hamburger"
-            android:background="@drawable/bg_floating_button"
-            android:scaleType="centerInside"
-            android:contentDescription="Menu Button"
-            android:elevation="6dp" />
-
-    </FrameLayout>
+    </LinearLayout>
 
     <!-- Sleek Custom Left-Side Navigation Drawer -->
     <LinearLayout
