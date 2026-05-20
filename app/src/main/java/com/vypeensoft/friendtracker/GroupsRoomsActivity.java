@@ -115,12 +115,55 @@ public class GroupsRoomsActivity extends AppCompatActivity implements GroupRoomA
 
     @Override
     public void onRoomSelected(int position) {
+        boolean isDifferent = !roomList.get(position).isActive();
+        
         for (int i = 0; i < roomList.size(); i++) {
             roomList.get(i).setActive(i == position);
         }
         saveRooms();
         adapter.notifyDataSetChanged();
-        Toast.makeText(this, "Active room updated", Toast.LENGTH_SHORT).show();
+        
+        if (isDifferent) {
+            clearSessionsFolder();
+            Toast.makeText(this, "Active room changed. Sessions cleared.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void clearSessionsFolder() {
+        String[] paths = {
+            "/sdcard/Vypeensoft/Friends_Location_Tracker/sessions",
+            "/sdcard/Vypeensoft/Freinds_Location_Tracker/sessions"
+        };
+        
+        for (String path : paths) {
+            try {
+                java.io.File dir = new java.io.File(path);
+                if (dir.exists() && dir.isDirectory()) {
+                    java.io.File[] files = dir.listFiles();
+                    if (files != null) {
+                        for (java.io.File f : files) {
+                            if (f.isFile()) {
+                                f.delete();
+                            }
+                        }
+                    }
+                }
+                
+                java.io.File envDir = new java.io.File(android.os.Environment.getExternalStorageDirectory(), path.replace("/sdcard/", ""));
+                if (envDir.exists() && envDir.isDirectory()) {
+                    java.io.File[] files = envDir.listFiles();
+                    if (files != null) {
+                        for (java.io.File f : files) {
+                            if (f.isFile()) {
+                                f.delete();
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                android.util.Log.e("GroupsRoomsActivity", "Error clearing sessions folder: " + path, e);
+            }
+        }
     }
 
     @Override
