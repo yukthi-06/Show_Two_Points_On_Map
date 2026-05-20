@@ -43,7 +43,6 @@ public class SettingsPersistenceManager {
     
     private static final String FILE_MAP_SETTINGS = "map_settings.json";
     private static final String FILE_MATRIX_CREDENTIALS = "matrix_credentials.json";
-    private static final String FILE_MATRIX_CREDENTIALS_ALT = "matrix_credentails.json";
     private static final String FILE_ROOMS_SETTINGS = "rooms_settings.json";
 
     public static void exportSettings(Context context) {
@@ -74,7 +73,6 @@ public class SettingsPersistenceManager {
             matrixJson.put(MapSettingsActivity.KEY_MATRIX_DISPLAY_NAME, prefs.getString(MapSettingsActivity.KEY_MATRIX_DISPLAY_NAME, ""));
             matrixJson.put(MapSettingsActivity.KEY_MATRIX_POLLING_PERIOD, prefs.getLong(MapSettingsActivity.KEY_MATRIX_POLLING_PERIOD, 10000L));
             saveToFile(new File(dir, FILE_MATRIX_CREDENTIALS), matrixJson.toString(4));
-            saveToFile(new File(dir, FILE_MATRIX_CREDENTIALS_ALT), matrixJson.toString(4));
 
             // Category 3: Rooms Settings
             JSONObject roomsJson = new JSONObject();
@@ -110,9 +108,6 @@ public class SettingsPersistenceManager {
 
             // Import Matrix Credentials
             File matrixFile = new File(dir, FILE_MATRIX_CREDENTIALS);
-            if (!matrixFile.exists()) {
-                matrixFile = new File(dir, FILE_MATRIX_CREDENTIALS_ALT);
-            }
             if (matrixFile.exists()) {
                 String content = readFile(matrixFile);
                 JSONObject json = new JSONObject(content);

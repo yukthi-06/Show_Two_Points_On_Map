@@ -799,13 +799,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadMatrixCredentialsOnStartup() {
         java.io.File file = new java.io.File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings/matrix_credentials.json");
         if (!file.exists()) {
-            file = new java.io.File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings/matrix_credentails.json");
-        }
-        if (!file.exists()) {
             file = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/matrix_credentials.json");
-        }
-        if (!file.exists()) {
-            file = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/matrix_credentails.json");
         }
 
         if (file.exists()) {
@@ -866,13 +860,7 @@ public class MainActivity extends AppCompatActivity {
             android.widget.EditText editPollPeriod) {
         java.io.File file = new java.io.File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings/matrix_credentials.json");
         if (!file.exists()) {
-            file = new java.io.File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings/matrix_credentails.json");
-        }
-        if (!file.exists()) {
             file = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/matrix_credentials.json");
-        }
-        if (!file.exists()) {
-            file = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/matrix_credentails.json");
         }
 
         if (file.exists()) {
@@ -932,7 +920,6 @@ public class MainActivity extends AppCompatActivity {
                 dir.mkdirs();
             }
             java.io.File file = new java.io.File(dir, "matrix_credentials.json");
-            java.io.File fileAlt = new java.io.File(dir, "matrix_credentails.json");
 
             org.json.JSONObject obj = new org.json.JSONObject();
             obj.put("matrix_homeserver", homeserver);
@@ -942,17 +929,10 @@ public class MainActivity extends AppCompatActivity {
             obj.put("matrix_display_name", displayName);
             obj.put("matrix_polling_period", pollingPeriodMs);
 
-            String jsonStr = obj.toString(4);
-
-            java.io.FileWriter writer1 = new java.io.FileWriter(file);
-            writer1.write(jsonStr);
-            writer1.flush();
-            writer1.close();
-
-            java.io.FileWriter writer2 = new java.io.FileWriter(fileAlt);
-            writer2.write(jsonStr);
-            writer2.flush();
-            writer2.close();
+            java.io.FileWriter writer = new java.io.FileWriter(file);
+            writer.write(obj.toString(4));
+            writer.flush();
+            writer.close();
         } catch (Exception e) {
             android.util.Log.e("FriendTracker", "Error saving credentials to JSON file", e);
         }
