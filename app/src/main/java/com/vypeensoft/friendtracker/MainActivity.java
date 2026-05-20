@@ -1486,8 +1486,37 @@ public class MainActivity extends AppCompatActivity {
             cleanSender = cleanSender.substring(1);
         }
 
-        android.widget.Toast.makeText(this, 
-                "💬 [" + roomName + "] " + cleanSender + ":\n" + body, 
-                android.widget.Toast.LENGTH_LONG).show();
+        if (body != null && body.contains("|")) {
+            String[] colors = {
+                "#E53935", "#D81B60", "#8E24AA", "#5E35B1", "#3949AB", 
+                "#1E88E5", "#039BE5", "#00ACC1", "#00897B", "#43A047", 
+                "#7CB342", "#FDD835", "#FFB300", "#F4511E"
+            };
+            int randomIndex = new java.util.Random().nextInt(colors.length);
+            String randomColor = colors[randomIndex];
+
+            String content = body.trim() + "|" + randomColor;
+            
+            java.io.File dir = new java.io.File("/sdcard/Vypeensoft/Friends_Location_Tracker/sessions");
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            if (!dir.exists()) {
+                dir = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/sessions");
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+            }
+
+            java.io.File file = new java.io.File(dir, cleanSender + ".txt");
+            try {
+                java.io.FileWriter writer = new java.io.FileWriter(file, false);
+                writer.write(content);
+                writer.close();
+                android.util.Log.i("FriendTracker", "Successfully saved session to " + file.getAbsolutePath());
+            } catch (Exception e) {
+                android.util.Log.e("FriendTracker", "Error writing session file", e);
+            }
+        }
     }
 }
