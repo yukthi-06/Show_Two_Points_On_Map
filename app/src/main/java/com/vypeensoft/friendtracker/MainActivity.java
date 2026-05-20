@@ -97,27 +97,27 @@ public class MainActivity extends AppCompatActivity {
 
         menuSettings.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
-            showSettingsDialog();
+            startActivity(new android.content.Intent(this, MapSettingsActivity.class));
         });
 
         menuMatrixCredentials.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
-            showMatrixCredentialsDialog();
+            startActivity(new android.content.Intent(this, MatrixCredentialsActivity.class));
         });
 
         menuMatrixRooms.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
-            showMatrixRoomsDialog();
+            startActivity(new android.content.Intent(this, GroupsRoomsActivity.class));
         });
 
         menuHelp.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
-            showHelpDialog();
+            startActivity(new android.content.Intent(this, HelpActivity.class));
         });
 
         menuAbout.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
-            showAboutDialog();
+            startActivity(new android.content.Intent(this, AboutActivity.class));
         });
 
         matrixClient = new MatrixClient(this);
@@ -136,6 +136,21 @@ public class MainActivity extends AppCompatActivity {
                 startMovementLoop();
             });
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mapView != null) {
+            mapView.onResume();
+        }
+        // Import settings in case they were modified/saved in Settings Activities
+        com.vypeensoft.friendtracker.util.SettingsPersistenceManager.importSettings(this);
+        loadMatrixCredentialsOnStartup();
+        if (matrixClient != null) {
+            matrixClient.loadConfig(this);
+        }
+        restartMatrixPolling();
     }
 
     private boolean checkAndRequestStoragePermissions() {
