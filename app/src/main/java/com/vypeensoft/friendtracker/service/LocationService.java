@@ -124,8 +124,7 @@ public class LocationService extends Service {
 
     private void writeSelfLocationToSessions(String cleanSender, String displayName, double lat, double lon) {
         String[] paths = {
-            "/sdcard/Vypeensoft/Friends_Location_Tracker/sessions",
-            "/sdcard/Vypeensoft/Freinds_Location_Tracker/sessions"
+            "/sdcard/Vypeensoft/Friends_Location_Tracker/sessions"
         };
 
         for (String path : paths) {

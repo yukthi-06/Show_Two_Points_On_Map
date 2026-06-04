@@ -131,8 +131,7 @@ public class GroupsRoomsActivity extends AppCompatActivity implements GroupRoomA
 
     private void clearSessionsFolder() {
         String[] paths = {
-            "/sdcard/Vypeensoft/Friends_Location_Tracker/sessions",
-            "/sdcard/Vypeensoft/Freinds_Location_Tracker/sessions"
+            "/sdcard/Vypeensoft/Friends_Location_Tracker/sessions"
         };
         
         for (String path : paths) {
