@@ -74,6 +74,7 @@ public class SettingsPersistenceManager {
             matrixJson.put(MapSettingsActivity.KEY_MATRIX_PASSWORD, prefs.getString(MapSettingsActivity.KEY_MATRIX_PASSWORD, ""));
             matrixJson.put(MapSettingsActivity.KEY_MATRIX_DISPLAY_NAME, prefs.getString(MapSettingsActivity.KEY_MATRIX_DISPLAY_NAME, ""));
             matrixJson.put(MapSettingsActivity.KEY_MATRIX_POLLING_PERIOD, prefs.getLong(MapSettingsActivity.KEY_MATRIX_POLLING_PERIOD, 10000L));
+            matrixJson.put(MapSettingsActivity.KEY_MATRIX_ENABLED, prefs.getBoolean(MapSettingsActivity.KEY_MATRIX_ENABLED, true));
             saveToFile(new File(dir, FILE_MATRIX_CREDENTIALS), matrixJson.toString(4));
 
             // Category 3: Rooms Settings
@@ -129,6 +130,8 @@ public class SettingsPersistenceManager {
                     editor.putString(MapSettingsActivity.KEY_MATRIX_DISPLAY_NAME, json.getString(MapSettingsActivity.KEY_MATRIX_DISPLAY_NAME));
                 if (json.has(MapSettingsActivity.KEY_MATRIX_POLLING_PERIOD))
                     editor.putLong(MapSettingsActivity.KEY_MATRIX_POLLING_PERIOD, json.getLong(MapSettingsActivity.KEY_MATRIX_POLLING_PERIOD));
+                if (json.has(MapSettingsActivity.KEY_MATRIX_ENABLED))
+                    editor.putBoolean(MapSettingsActivity.KEY_MATRIX_ENABLED, json.getBoolean(MapSettingsActivity.KEY_MATRIX_ENABLED));
             }
 
             // Import Rooms Settings
