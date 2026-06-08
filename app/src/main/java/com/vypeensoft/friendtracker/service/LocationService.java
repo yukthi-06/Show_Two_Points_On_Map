@@ -265,7 +265,7 @@ public class LocationService extends Service {
         try {
             File file = new File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
             if (!file.exists()) {
-                file = new File(Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
+                file = new File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
             }
             if (file.exists()) {
                 BufferedReader br = new BufferedReader(new FileReader(file));
@@ -288,7 +288,7 @@ public class LocationService extends Service {
         try {
             File file = new File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
             if (!file.exists()) {
-                file = new File(Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
+                file = new File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
             }
             if (file.exists()) {
                 BufferedReader br = new BufferedReader(new FileReader(file));
