@@ -73,6 +73,29 @@
                     android:hint="GPS Refresh Interval (seconds)" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Current User Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="User Settings"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:helperText="Enter the username for the current user.">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_current_user"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:hint="Current User" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <Button
                 android:id="@+id/btn_save"
                 android:layout_width="match_parent"

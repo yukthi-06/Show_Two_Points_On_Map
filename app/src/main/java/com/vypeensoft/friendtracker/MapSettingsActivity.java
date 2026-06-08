@@ -26,9 +26,11 @@ public class MapSettingsActivity extends AppCompatActivity {
     public static final String KEY_MATRIX_ROOM_ALIAS = "matrix_room_alias";
     public static final String KEY_MATRIX_DISPLAY_NAME = "matrix_display_name";
     public static final String KEY_MATRIX_POLLING_PERIOD = "matrix_polling_period";
+    public static final String KEY_CURRENT_USER = "current_user";
 
     private TextInputEditText editStyleUrl;
     private TextInputEditText editGpsInterval;
+    private TextInputEditText editCurrentUser;
     private Button btnSave;
 
     @Override
@@ -44,6 +46,7 @@ public class MapSettingsActivity extends AppCompatActivity {
 
         editStyleUrl = findViewById(R.id.edit_mapbox_token);
         editGpsInterval = findViewById(R.id.edit_gps_interval);
+        editCurrentUser = findViewById(R.id.edit_current_user);
         btnSave = findViewById(R.id.btn_save);
 
         loadConfig();
@@ -56,6 +59,7 @@ public class MapSettingsActivity extends AppCompatActivity {
         editStyleUrl.setText(prefs.getString(KEY_STYLE_URL, "https://tiles.openfreemap.org/styles/liberty"));
         long intervalSec = prefs.getLong(KEY_GPS_REFRESH_INTERVAL, 10L);
         editGpsInterval.setText(String.valueOf(intervalSec));
+        editCurrentUser.setText(prefs.getString(KEY_CURRENT_USER, ""));
     }
 
     private void saveConfig() {
@@ -63,6 +67,7 @@ public class MapSettingsActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = prefs.edit();
 
         editor.putString(KEY_STYLE_URL, editStyleUrl.getText().toString().trim());
+        editor.putString(KEY_CURRENT_USER, editCurrentUser.getText().toString().trim());
 
         String intervalStr = editGpsInterval.getText().toString().trim();
         long intervalSec = 10L;
