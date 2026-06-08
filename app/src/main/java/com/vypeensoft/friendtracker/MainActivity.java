@@ -1582,19 +1582,29 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (activeMarkers.size() == 1) {
-            // Animate to the single marker at a reasonable zoom level
-            Marker singleMarker = activeMarkers.values().iterator().next();
-            mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngZoom(singleMarker.getPosition(), 14.5));
-        } else {
-            // Build bounds for all markers
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            for (Marker marker : activeMarkers.values()) {
-                builder.include(marker.getPosition());
-            }
-            LatLngBounds bounds = builder.build();
-            // Zoom to bounds with padding (150 pixels)
-            mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150));
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (Marker marker : activeMarkers.values()) {
+            builder.include(marker.getPosition());
         }
+        LatLngBounds bounds = builder.build();
+
+        // Calculate diagonal distance in meters between Southwest and Northeast corners
+        double distance = bounds.getSouthWest().distanceTo(bounds.getNorthEast());
+
+        if (distance < 20.0 || activeMarkers.size() == 1) {
+            // Expand the boundary around the center to ensure it represents at least 20 meters
+            LatLng center = bounds.getCenter();
+            double latDelta = 10.0 / 111111.0;
+            double lonDelta = 10.0 / (111111.0 * Math.cos(Math.toRadians(center.getLatitude())));
+            LatLng southWest = new LatLng(center.getLatitude() - latDelta, center.getLongitude() - lonDelta);
+            LatLng northEast = new LatLng(center.getLatitude() + latDelta, center.getLongitude() + lonDelta);
+            bounds = new LatLngBounds.Builder()
+                    .include(southWest)
+                    .include(northEast)
+                    .build();
+        }
+
+        // Zoom to bounds with padding (150 pixels)
+        mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150));
     }
 }
