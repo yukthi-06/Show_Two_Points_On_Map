@@ -289,6 +289,25 @@ public class MainActivity extends AppCompatActivity {
                         loadedLocations = filtered;
                     }
 
+                    // Update overlay text with usernames of current session
+                    StringBuilder userNamesBuilder = new StringBuilder();
+                    for (int i = 0; i < loadedLocations.size(); i++) {
+                        userNamesBuilder.append(loadedLocations.get(i).username);
+                        if (i < loadedLocations.size() - 1) {
+                            userNamesBuilder.append(" ");
+                        }
+                    }
+                    String userNamesStr = userNamesBuilder.toString();
+                    android.widget.TextView tvSessionUsers = findViewById(R.id.tv_session_users);
+                    if (tvSessionUsers != null) {
+                        if (!userNamesStr.isEmpty()) {
+                            tvSessionUsers.setText(userNamesStr);
+                            tvSessionUsers.setVisibility(android.view.View.VISIBLE);
+                        } else {
+                            tvSessionUsers.setVisibility(android.view.View.GONE);
+                        }
+                    }
+
                     // 3. Keep track of active usernames
                     java.util.Set<String> newUsernames = new java.util.HashSet<>();
                     for (UserLocation loc : loadedLocations) {

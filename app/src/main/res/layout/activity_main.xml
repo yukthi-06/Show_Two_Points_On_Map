@@ -56,6 +56,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
+            <!-- Session Usernames Overlay Text at the top -->
+            <TextView
+                android:id="@+id/tv_session_users"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_margin="12dp"
+                android:background="#A6000000"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:padding="8dp"
+                android:gravity="center"
+                android:elevation="6dp"
+                android:visibility="gone" />
+
             <!-- Floating button for Zoom to Fit (looks like "[   ]") -->
             <ImageButton
                 android:id="@+id/btn_zoom_fit"
