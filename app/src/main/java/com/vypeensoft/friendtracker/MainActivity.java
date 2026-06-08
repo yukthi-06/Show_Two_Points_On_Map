@@ -1634,29 +1634,63 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (Marker marker : activeMarkers.values()) {
-            builder.include(marker.getPosition());
-        }
-        LatLngBounds bounds = builder.build();
+        LatLngBounds bounds = null;
 
-        // Calculate diagonal distance in meters between Southwest and Northeast corners
-        double distance = bounds.getSouthWest().distanceTo(bounds.getNorthEast());
+        try {
+            if (activeMarkers.size() == 1) {
+                // Safely handle single marker case without builder.build() exception
+                Marker singleMarker = activeMarkers.values().iterator().next();
+                if (singleMarker == null || singleMarker.getPosition() == null) return;
+                LatLng center = singleMarker.getPosition();
+                double latDelta = 10.0 / 111111.0;
+                double lonDelta = 10.0 / (111111.0 * Math.cos(Math.toRadians(center.getLatitude())));
+                LatLng southWest = new LatLng(center.getLatitude() - latDelta, center.getLongitude() - lonDelta);
+                LatLng northEast = new LatLng(center.getLatitude() + latDelta, center.getLongitude() + lonDelta);
+                bounds = new LatLngBounds.Builder()
+                        .include(southWest)
+                        .include(northEast)
+                        .build();
+            } else {
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                int validCount = 0;
+                for (Marker marker : activeMarkers.values()) {
+                    if (marker != null && marker.getPosition() != null) {
+                        builder.include(marker.getPosition());
+                        validCount++;
+                    }
+                }
+                if (validCount == 0) return;
+                
+                bounds = builder.build();
 
-        if (distance < 20.0 || activeMarkers.size() == 1) {
-            // Expand the boundary around the center to ensure it represents at least 20 meters
-            LatLng center = bounds.getCenter();
-            double latDelta = 10.0 / 111111.0;
-            double lonDelta = 10.0 / (111111.0 * Math.cos(Math.toRadians(center.getLatitude())));
-            LatLng southWest = new LatLng(center.getLatitude() - latDelta, center.getLongitude() - lonDelta);
-            LatLng northEast = new LatLng(center.getLatitude() + latDelta, center.getLongitude() + lonDelta);
-            bounds = new LatLngBounds.Builder()
-                    .include(southWest)
-                    .include(northEast)
-                    .build();
+                // Calculate diagonal distance in meters between Southwest and Northeast corners
+                double distance = bounds.getSouthWest().distanceTo(bounds.getNorthEast());
+
+                if (distance < 20.0) {
+                    // Expand the boundary around the center to ensure it represents at least 20 meters
+                    LatLng center = bounds.getCenter();
+                    double latDelta = 10.0 / 111111.0;
+                    double lonDelta = 10.0 / (111111.0 * Math.cos(Math.toRadians(center.getLatitude())));
+                    LatLng southWest = new LatLng(center.getLatitude() - latDelta, center.getLongitude() - lonDelta);
+                    LatLng northEast = new LatLng(center.getLatitude() + latDelta, center.getLongitude() + lonDelta);
+                    bounds = new LatLngBounds.Builder()
+                            .include(southWest)
+                            .include(northEast)
+                            .build();
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.e("FriendTracker", "Error constructing LatLngBounds", e);
+            return;
         }
+
+        if (bounds == null) return;
 
         // Zoom to bounds with padding (150 pixels)
-        mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150));
+        try {
+            mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150));
+        } catch (Exception e) {
+            android.util.Log.e("FriendTracker", "Error animating camera to bounds", e);
+        }
     }
 }
