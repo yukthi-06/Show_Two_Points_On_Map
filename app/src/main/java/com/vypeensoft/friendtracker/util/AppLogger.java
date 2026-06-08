@@ -14,15 +14,29 @@ import java.util.Locale;
 public class AppLogger {
     private static final String TAG = "AppLogger";
     public static final String ACTION_LOG_UPDATE = "com.vypeensoft.friendtracker.LOG_UPDATE";
-    private static final String LOG_DIR_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Vypeensoft/Friends_Location_Tracker/logs";
+    private static final String LOG_DIR_PATH = "/sdcard/Vypeensoft/Friends_Location_Tracker/logs";
     private static String currentLogFileName = null;
 
     private static String getLogFileName() {
         if (currentLogFileName == null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault());
-            currentLogFileName = "app-" + sdf.format(new Date()) + ".log";
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.getDefault());
+            currentLogFileName = "log_" + sdf.format(new Date()) + ".txt";
         }
         return currentLogFileName;
+    }
+
+    private static File getLogDir() {
+        File dir = new File(LOG_DIR_PATH);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        if (!dir.exists()) {
+            dir = new File(Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/logs");
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+        }
+        return dir;
     }
 
     public static void log(Context context, String tag, String message) {
@@ -46,8 +60,8 @@ public class AppLogger {
         }
 
         try {
-            File dir = new File(LOG_DIR_PATH);
-            if (!dir.exists() && !dir.mkdirs()) {
+            File dir = getLogDir();
+            if (!dir.exists()) {
                 return;
             }
 

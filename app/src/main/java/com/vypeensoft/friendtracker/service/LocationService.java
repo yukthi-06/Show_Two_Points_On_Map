@@ -199,6 +199,7 @@ public class LocationService extends Service {
 
     private void startCloudflareLoop() {
         stopCloudflareLoop();
+        AppLogger.log(this, TAG, "Cloudflare tracking loop starting...");
 
         cloudflareRunnable = new Runnable() {
             @Override
@@ -207,11 +208,15 @@ public class LocationService extends Service {
                 int intervalSec = loadCloudflareInterval();
                 if (intervalSec < 1) intervalSec = 5;
 
+                AppLogger.log(LocationService.this, TAG, "Cloudflare loop triggered. Configured URL: " + url + ", Polling Interval: " + intervalSec + "s");
+
                 if (!url.isEmpty() && lastKnownLocation != null) {
                     try {
                         SharedPreferences friendPrefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
                         java.util.Set<String> trackedFriends = friendPrefs.getStringSet("tracked_friends", null);
                         
+                        AppLogger.log(LocationService.this, TAG, "Tracked friends retrieved: " + (trackedFriends != null ? trackedFriends.toString() : "null"));
+
                         String sessionId = "";
                         if (trackedFriends != null && !trackedFriends.isEmpty()) {
                             java.util.List<String> list = new java.util.ArrayList<>();
@@ -232,6 +237,8 @@ public class LocationService extends Service {
                         SharedPreferences appConfig = getSharedPreferences("AppConfig", MODE_PRIVATE);
                         String userName = appConfig.getString("current_user", "");
 
+                        AppLogger.log(LocationService.this, TAG, "Constructed session ID: " + sessionId + ", User Name: " + userName);
+
                         JSONObject payload = new JSONObject();
                         payload.put("sessionid", sessionId);
                         payload.put("userName", userName);
@@ -239,12 +246,19 @@ public class LocationService extends Service {
                         payload.put("longitude", lastKnownLocation.getLongitude());
                         payload.put("timestamp", System.currentTimeMillis());
 
+                        AppLogger.log(LocationService.this, TAG, "Prepared payload: " + payload.toString());
+
                         sendCloudflareUpdate(url, payload);
                     } catch (Exception e) {
-                        Log.e(TAG, "Error in Cloudflare tracking loop", e);
+                        AppLogger.logError(LocationService.this, TAG, "Error in Cloudflare tracking loop", e);
                     }
                 } else {
-                    Log.d(TAG, "Cloudflare tracking loop: URL empty or no GPS signal yet.");
+                    if (url.isEmpty()) {
+                        AppLogger.log(LocationService.this, TAG, "Cloudflare tracking loop: skipped run because URL is empty.");
+                    }
+                    if (lastKnownLocation == null) {
+                        AppLogger.log(LocationService.this, TAG, "Cloudflare tracking loop: skipped run because no GPS location signal is available yet.");
+                    }
                 }
 
                 cloudflareHandler.postDelayed(this, intervalSec * 1000L);
@@ -256,6 +270,7 @@ public class LocationService extends Service {
 
     private void stopCloudflareLoop() {
         if (cloudflareRunnable != null) {
+            AppLogger.log(this, TAG, "Stopping Cloudflare tracking loop");
             cloudflareHandler.removeCallbacks(cloudflareRunnable);
             cloudflareRunnable = null;
         }
@@ -319,6 +334,7 @@ public class LocationService extends Service {
                         urlStr += "/update";
                     }
                 }
+                AppLogger.log(LocationService.this, TAG, "Sending POST update to: " + urlStr);
                 java.net.URL url = new java.net.URL(urlStr);
                 conn = (java.net.HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
@@ -332,9 +348,9 @@ public class LocationService extends Service {
                 os.close();
 
                 int responseCode = conn.getResponseCode();
-                Log.i(TAG, "Cloudflare POST response code: " + responseCode);
+                AppLogger.log(LocationService.this, TAG, "Cloudflare POST response code: " + responseCode);
             } catch (Exception e) {
-                Log.e(TAG, "Error sending Cloudflare post request", e);
+                AppLogger.logError(LocationService.this, TAG, "Error sending Cloudflare post request", e);
             } finally {
                 if (conn != null) {
                     conn.disconnect();
