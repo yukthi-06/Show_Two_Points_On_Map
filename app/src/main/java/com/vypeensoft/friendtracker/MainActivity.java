@@ -18,6 +18,7 @@ import org.maplibre.android.annotations.Marker;
 import org.maplibre.android.annotations.MarkerOptions;
 import org.maplibre.android.camera.CameraUpdateFactory;
 import org.maplibre.android.geometry.LatLng;
+import org.maplibre.android.geometry.LatLngBounds;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.Style;
@@ -83,6 +84,11 @@ public class MainActivity extends AppCompatActivity {
 
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
+
+        android.widget.ImageButton btnZoomFit = findViewById(R.id.btn_zoom_fit);
+        if (btnZoomFit != null) {
+            btnZoomFit.setOnClickListener(v -> zoomToFitAllMarkers());
+        }
 
         // Setup Drawer Controls
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -1561,6 +1567,29 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 android.util.Log.e("FriendTracker", "Error writing session file", e);
             }
+        }
+    }
+
+    private void zoomToFitAllMarkers() {
+        if (mapLibreMap == null) return;
+        if (activeMarkers.isEmpty()) {
+            android.widget.Toast.makeText(this, "No active markers to zoom to", android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (activeMarkers.size() == 1) {
+            // Animate to the single marker at a reasonable zoom level
+            Marker singleMarker = activeMarkers.values().iterator().next();
+            mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngZoom(singleMarker.getPosition(), 14.5));
+        } else {
+            // Build bounds for all markers
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            for (Marker marker : activeMarkers.values()) {
+                builder.include(marker.getPosition());
+            }
+            LatLngBounds bounds = builder.build();
+            // Zoom to bounds with padding (150 pixels)
+            mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150));
         }
     }
 }
