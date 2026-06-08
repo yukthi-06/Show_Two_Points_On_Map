@@ -288,6 +288,40 @@ public class MainActivity extends AppCompatActivity {
                         loadedLocations = filtered;
                     }
 
+                    // Sort current users alphabetically
+                    java.util.Collections.sort(loadedLocations, new java.util.Comparator<UserLocation>() {
+                        @Override
+                        public int compare(UserLocation o1, UserLocation o2) {
+                            if (o1.username == null) return -1;
+                            if (o2.username == null) return 1;
+                            return o1.username.compareToIgnoreCase(o2.username);
+                        }
+                    });
+
+                    // Assign color: 1st RED, 2nd BLUE, 3rd GREEN, 4th ORANGE (cycling)
+                    java.util.List<UserLocation> coloredLocations = new java.util.ArrayList<>();
+                    for (int i = 0; i < loadedLocations.size(); i++) {
+                        UserLocation loc = loadedLocations.get(i);
+                        String colorName;
+                        int colorVal;
+                        int index = i % 4;
+                        if (index == 0) {
+                            colorName = "red";
+                            colorVal = android.graphics.Color.parseColor("#E53935");
+                        } else if (index == 1) {
+                            colorName = "blue";
+                            colorVal = android.graphics.Color.parseColor("#2196F3");
+                        } else if (index == 2) {
+                            colorName = "green";
+                            colorVal = android.graphics.Color.parseColor("#4CAF50");
+                        } else {
+                            colorName = "orange";
+                            colorVal = android.graphics.Color.parseColor("#FF9800");
+                        }
+                        coloredLocations.add(new UserLocation(loc.username, loc.latitude, loc.longitude, colorVal, colorName));
+                    }
+                    loadedLocations = coloredLocations;
+
                     // Update overlay text with usernames of current session from friends list checkboxes
                     StringBuilder userNamesBuilder = new StringBuilder();
                     if (trackedSet != null && !trackedSet.isEmpty()) {
