@@ -62,7 +62,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Friends Group A"
+                    android:text="Munekolala"
                     android:textColor="#1976D2"
                     android:textSize="14sp"
                     android:textStyle="bold"
@@ -81,7 +81,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Friends Group B"
+                    android:text="Banaswadi"
                     android:textColor="#1976D2"
                     android:textSize="14sp"
                     android:textStyle="bold"

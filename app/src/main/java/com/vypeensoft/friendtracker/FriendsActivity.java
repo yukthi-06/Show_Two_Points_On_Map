@@ -48,6 +48,10 @@ public class FriendsActivity extends AppCompatActivity {
             cb.setText(name);
             cb.setTextSize(16);
             cb.setPadding(8, 8, 8, 8);
+            cb.setTextColor(android.graphics.Color.parseColor("#212121"));
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                cb.setButtonTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#1976D2")));
+            }
             if (trackedFriends != null && trackedFriends.contains(name)) {
                 cb.setChecked(true);
             }
