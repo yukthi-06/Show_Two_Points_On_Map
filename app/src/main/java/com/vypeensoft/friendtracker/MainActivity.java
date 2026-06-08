@@ -428,10 +428,11 @@ public class MainActivity extends AppCompatActivity {
             }
             java.io.File[] files = dir.listFiles();
             if (files == null || files.length == 0) {
-                // Write 3 sample files for Red, Green, and Blue friends
+                // Write 4 sample files for Red, Green, Blue, and Orange friends
                 writeSampleFile(new java.io.File(dir, "friend_red.txt"), "Red Friend|9.9312|76.2673|Red");
                 writeSampleFile(new java.io.File(dir, "friend_green.txt"), "Green Friend|9.9412|76.2773|Green");
                 writeSampleFile(new java.io.File(dir, "friend_blue.txt"), "Blue Friend|9.9212|76.2573|Blue");
+                writeSampleFile(new java.io.File(dir, "friend_orange.txt"), "Orange Friend|9.9512|76.2873|Orange");
             }
         } catch (Exception e) {
             android.util.Log.e("FriendTracker", "Error creating sample files", e);
