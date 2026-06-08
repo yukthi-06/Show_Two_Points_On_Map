@@ -67,6 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:hint="App Server URL"
+                app:expandedHintEnabled="false"
                 app:boxStrokeColor="#1976D2"
                 app:hintTextColor="#1976D2">
 
@@ -86,6 +87,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
                 android:hint="Polling Interval (seconds)"
+                app:expandedHintEnabled="false"
                 app:boxStrokeColor="#1976D2"
                 app:hintTextColor="#1976D2">
 
