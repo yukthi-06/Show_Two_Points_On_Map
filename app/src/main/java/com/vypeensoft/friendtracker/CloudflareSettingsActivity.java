@@ -113,12 +113,20 @@ public class CloudflareSettingsActivity extends AppCompatActivity {
     }
 
     private File getSettingsFile() {
-        File file = new File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
-        if (!file.exists()) {
-            File fallbackDir = new File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings");
-            file = new File(fallbackDir, "cloudflare.json");
+        File primaryDir = new File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings");
+        File primaryFile = new File(primaryDir, "cloudflare.json");
+        
+        // If the primary directory exists or can be created, use the primary file path
+        if (primaryDir.exists() || primaryDir.mkdirs()) {
+            return primaryFile;
         }
-        return file;
+        
+        // Otherwise, fall back to external storage directory
+        File fallbackDir = new File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings");
+        if (!fallbackDir.exists()) {
+            fallbackDir.mkdirs();
+        }
+        return new File(fallbackDir, "cloudflare.json");
     }
 
     @Override
