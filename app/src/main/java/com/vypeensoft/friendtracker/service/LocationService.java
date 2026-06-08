@@ -25,6 +25,10 @@ import com.vypeensoft.friendtracker.MapSettingsActivity;
 import com.vypeensoft.friendtracker.util.AppLogger;
 import android.content.SharedPreferences;
 import android.content.Context;
+import org.json.JSONObject;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 
 public class LocationService extends Service {
     private static final String TAG = "LocationService";
@@ -35,6 +39,9 @@ public class LocationService extends Service {
     private LocationCallback locationCallback;
     private MatrixClient matrixClient;
     private String userId = "user_" + Build.ID; // Simple default userId
+    private final android.os.Handler cloudflareHandler = new android.os.Handler(Looper.getMainLooper());
+    private Runnable cloudflareRunnable;
+    private Location lastKnownLocation;
 
     @Override
     public void onCreate() {
@@ -49,6 +56,7 @@ public class LocationService extends Service {
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) return;
                 for (Location location : locationResult.getLocations()) {
+                    lastKnownLocation = location;
                     onLocationUpdated(location);
                 }
             }
@@ -61,6 +69,7 @@ public class LocationService extends Service {
         AppLogger.log(this, TAG, "LocationService starting...");
         startForeground(NOTIFICATION_ID, getNotification());
         requestLocationUpdates();
+        startCloudflareLoop();
         return START_STICKY;
     }
 
@@ -179,11 +188,158 @@ public class LocationService extends Service {
         super.onDestroy();
         AppLogger.log(this, TAG, "LocationService destroyed");
         fusedLocationClient.removeLocationUpdates(locationCallback);
+        stopCloudflareLoop();
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    private void startCloudflareLoop() {
+        stopCloudflareLoop();
+
+        cloudflareRunnable = new Runnable() {
+            @Override
+            public void run() {
+                String url = loadCloudflareUrl();
+                int intervalSec = loadCloudflareInterval();
+                if (intervalSec < 1) intervalSec = 5;
+
+                if (!url.isEmpty() && lastKnownLocation != null) {
+                    try {
+                        SharedPreferences friendPrefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+                        java.util.Set<String> trackedFriends = friendPrefs.getStringSet("tracked_friends", null);
+                        
+                        String sessionId = "";
+                        if (trackedFriends != null && !trackedFriends.isEmpty()) {
+                            java.util.List<String> list = new java.util.ArrayList<>();
+                            for (String f : trackedFriends) {
+                                list.add(f.trim().toLowerCase());
+                            }
+                            java.util.Collections.sort(list);
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < list.size(); i++) {
+                                sb.append(list.get(i));
+                                if (i < list.size() - 1) {
+                                    sb.append("_");
+                                }
+                            }
+                            sessionId = sb.toString();
+                        }
+
+                        SharedPreferences appConfig = getSharedPreferences("AppConfig", MODE_PRIVATE);
+                        String userName = appConfig.getString("current_user", "");
+
+                        JSONObject payload = new JSONObject();
+                        payload.put("sessionid", sessionId);
+                        payload.put("userName", userName);
+                        payload.put("latitude", lastKnownLocation.getLatitude());
+                        payload.put("longitude", lastKnownLocation.getLongitude());
+                        payload.put("timestamp", System.currentTimeMillis());
+
+                        sendCloudflareUpdate(url, payload);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error in Cloudflare tracking loop", e);
+                    }
+                } else {
+                    Log.d(TAG, "Cloudflare tracking loop: URL empty or no GPS signal yet.");
+                }
+
+                cloudflareHandler.postDelayed(this, intervalSec * 1000L);
+            }
+        };
+
+        cloudflareHandler.post(cloudflareRunnable);
+    }
+
+    private void stopCloudflareLoop() {
+        if (cloudflareRunnable != null) {
+            cloudflareHandler.removeCallbacks(cloudflareRunnable);
+            cloudflareRunnable = null;
+        }
+    }
+
+    private String loadCloudflareUrl() {
+        try {
+            File file = new File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
+            if (!file.exists()) {
+                file = new File(Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
+            }
+            if (file.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                br.close();
+                JSONObject json = new JSONObject(sb.toString());
+                return json.optString("cloudflareUrl", "");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading cloudflare url", e);
+        }
+        return "";
+    }
+
+    private int loadCloudflareInterval() {
+        try {
+            File file = new File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
+            if (!file.exists()) {
+                file = new File(Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
+            }
+            if (file.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                br.close();
+                JSONObject json = new JSONObject(sb.toString());
+                return json.optInt("cloudflarePollingInterval", 5);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading cloudflare interval", e);
+        }
+        return 5;
+    }
+
+    private void sendCloudflareUpdate(String cloudflareUrl, JSONObject payload) {
+        new Thread(() -> {
+            java.net.HttpURLConnection conn = null;
+            try {
+                String urlStr = cloudflareUrl.trim();
+                if (!urlStr.endsWith("/update")) {
+                    if (urlStr.endsWith("/")) {
+                        urlStr += "update";
+                    } else {
+                        urlStr += "/update";
+                    }
+                }
+                java.net.URL url = new java.net.URL(urlStr);
+                conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
+
+                java.io.OutputStream os = conn.getOutputStream();
+                os.write(payload.toString().getBytes("UTF-8"));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                Log.i(TAG, "Cloudflare POST response code: " + responseCode);
+            } catch (Exception e) {
+                Log.e(TAG, "Error sending Cloudflare post request", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+        }).start();
     }
 }
