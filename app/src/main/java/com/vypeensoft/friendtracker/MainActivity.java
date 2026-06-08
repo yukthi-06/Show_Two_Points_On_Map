@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private android.view.View menuAbout;
     private android.view.View menuFriends;
     private android.view.View menuCloudflare;
+    private android.widget.Button btnToggleTracking;
 
     // Movement Loop Handler
     private final android.os.Handler movementHandler = new android.os.Handler(android.os.Looper.getMainLooper());
@@ -104,6 +105,45 @@ public class MainActivity extends AppCompatActivity {
         menuCloudflare = findViewById(R.id.menu_cloudflare);
 
         btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(android.view.Gravity.LEFT));
+
+        btnToggleTracking = findViewById(R.id.btn_toggle_tracking);
+        updateTrackingButtonState();
+
+        btnToggleTracking.setOnClickListener(v -> {
+            android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+            boolean stopped = prefs.getBoolean("tracking_stopped", false);
+            boolean newStopped = !stopped;
+            prefs.edit().putBoolean("tracking_stopped", newStopped).apply();
+            updateTrackingButtonState();
+
+            android.content.Intent serviceIntent = new android.content.Intent(this, com.vypeensoft.friendtracker.service.LocationService.class);
+            if (newStopped) {
+                stopService(serviceIntent);
+                android.widget.Toast.makeText(this, "Tracking stopped. JSON updates paused.", android.widget.Toast.LENGTH_SHORT).show();
+            } else {
+                boolean locationGranted = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED;
+                boolean storageGranted = false;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    storageGranted = android.os.Environment.isExternalStorageManager();
+                } else {
+                    storageGranted = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == android.content.pm.PackageManager.PERMISSION_GRANTED;
+                }
+                if (locationGranted && storageGranted) {
+                    try {
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                            startForegroundService(serviceIntent);
+                        } else {
+                            startService(serviceIntent);
+                        }
+                        android.widget.Toast.makeText(this, "Tracking started. Sending JSON updates.", android.widget.Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        android.util.Log.e("FriendTracker", "Failed to start LocationService", e);
+                    }
+                } else {
+                    android.widget.Toast.makeText(this, "Please grant required permissions first.", android.widget.Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         menuSettings.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
@@ -192,7 +232,9 @@ public class MainActivity extends AppCompatActivity {
             }, 101);
         }
 
-        if (storageGranted && locationGranted) {
+        android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+        boolean stopped = prefs.getBoolean("tracking_stopped", false);
+        if (storageGranted && locationGranted && !stopped) {
             try {
                 android.content.Intent serviceIntent = new android.content.Intent(this, com.vypeensoft.friendtracker.service.LocationService.class);
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -624,8 +666,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        updateTrackingButtonState();
+
         // Ensure LocationService is started if permissions are granted
-        if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+        boolean stopped = prefs.getBoolean("tracking_stopped", false);
+        if (!stopped && androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             boolean storageGranted = false;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
                 storageGranted = android.os.Environment.isExternalStorageManager();
@@ -1698,6 +1744,19 @@ public class MainActivity extends AppCompatActivity {
             mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150));
         } catch (Exception e) {
             android.util.Log.e("FriendTracker", "Error animating camera to bounds", e);
+        }
+    }
+
+    private void updateTrackingButtonState() {
+        if (btnToggleTracking == null) return;
+        android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+        boolean stopped = prefs.getBoolean("tracking_stopped", false);
+        if (stopped) {
+            btnToggleTracking.setText("Start Sending");
+            btnToggleTracking.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#388E3C"))); // Emerald/Green
+        } else {
+            btnToggleTracking.setText("Stop Sending");
+            btnToggleTracking.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#D32F2F"))); // Crimson/Red
         }
     }
 }

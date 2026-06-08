@@ -71,6 +71,23 @@
                 android:contentDescription="Zoom to fit all friends"
                 android:elevation="6dp" />
 
+            <!-- Stop/Start Tracking Button at the bottom center -->
+            <Button
+                android:id="@+id/btn_toggle_tracking"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:text="Stop Sending"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#D32F2F"
+                android:elevation="6dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp" />
+
         </FrameLayout>
 
     </LinearLayout>
