@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private android.view.View menuHelp;
     private android.view.View menuAbout;
     private android.view.View menuFriends;
+    private android.view.View menuCloudflare;
 
     // Movement Loop Handler
     private final android.os.Handler movementHandler = new android.os.Handler(android.os.Looper.getMainLooper());
@@ -100,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
         menuHelp = findViewById(R.id.menu_help);
         menuAbout = findViewById(R.id.menu_about);
         menuFriends = findViewById(R.id.menu_friends);
+        menuCloudflare = findViewById(R.id.menu_cloudflare);
 
         btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(android.view.Gravity.LEFT));
 
@@ -131,6 +133,11 @@ public class MainActivity extends AppCompatActivity {
         menuFriends.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
             startActivity(new android.content.Intent(this, FriendsActivity.class));
+        });
+
+        menuCloudflare.setOnClickListener(v -> {
+            drawerLayout.closeDrawers();
+            startActivity(new android.content.Intent(this, CloudflareSettingsActivity.class));
         });
 
         matrixClient = new MatrixClient(this);

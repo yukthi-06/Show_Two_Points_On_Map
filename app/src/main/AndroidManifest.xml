@@ -41,6 +41,7 @@
         <activity android:name=".HelpActivity" android:label="@string/menu_help" android:parentActivityName=".MainActivity" />
         <activity android:name=".AboutActivity" android:label="@string/menu_about" android:parentActivityName=".MainActivity" />
         <activity android:name=".FriendsActivity" android:label="Friends" android:parentActivityName=".MainActivity" />
+        <activity android:name=".CloudflareSettingsActivity" android:label="Cloudflare Settings" android:parentActivityName=".MainActivity" />
 
         <service
             android:name=".service.LocationService"
