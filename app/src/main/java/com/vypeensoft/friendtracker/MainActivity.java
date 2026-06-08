@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
             if (newStopped) {
                 stopService(serviceIntent);
                 android.widget.Toast.makeText(this, "Tracking stopped. JSON updates paused.", android.widget.Toast.LENGTH_SHORT).show();
+            } else {
                 boolean locationGranted = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED;
                 boolean storageGranted = false;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             startService(serviceIntent);
                         }
-                        android.widget.Toast.makeText(this, "Tracking started. Sending JSON updates.", android.widget.Toast.LENGTH_SHORT).show();
+                        android.widget.Toast.makeText(this, "Tracking started.", android.widget.Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         android.util.Log.e("FriendTracker", "Failed to start LocationService", e);
                     }
