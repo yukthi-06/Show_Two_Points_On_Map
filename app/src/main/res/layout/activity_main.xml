@@ -94,7 +94,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_horizontal"
                 android:layout_marginBottom="16dp"
-                android:text="Stop Sending"
+                android:text="Stop Tracking"
                 android:textAllCaps="false"
                 android:textSize="16sp"
                 android:textStyle="bold"

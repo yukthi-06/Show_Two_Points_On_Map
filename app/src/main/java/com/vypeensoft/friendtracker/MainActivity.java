@@ -1821,10 +1821,10 @@ public class MainActivity extends AppCompatActivity {
         android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
         boolean stopped = prefs.getBoolean("tracking_stopped", false);
         if (stopped) {
-            btnToggleTracking.setText("Start Sending");
+            btnToggleTracking.setText("Start Tracking");
             btnToggleTracking.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#388E3C"))); // Emerald/Green
         } else {
-            btnToggleTracking.setText("Stop Sending");
+            btnToggleTracking.setText("Stop Tracking");
             btnToggleTracking.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#D32F2F"))); // Crimson/Red
         }
     }
