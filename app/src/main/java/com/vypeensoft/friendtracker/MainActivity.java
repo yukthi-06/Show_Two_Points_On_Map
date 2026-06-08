@@ -289,12 +289,16 @@ public class MainActivity extends AppCompatActivity {
                         loadedLocations = filtered;
                     }
 
-                    // Update overlay text with usernames of current session
+                    // Update overlay text with usernames of current session from friends list checkboxes
                     StringBuilder userNamesBuilder = new StringBuilder();
-                    for (int i = 0; i < loadedLocations.size(); i++) {
-                        userNamesBuilder.append(loadedLocations.get(i).username);
-                        if (i < loadedLocations.size() - 1) {
-                            userNamesBuilder.append(" ");
+                    if (trackedSet != null && !trackedSet.isEmpty()) {
+                        java.util.List<String> sortedList = new java.util.ArrayList<>(trackedSet);
+                        java.util.Collections.sort(sortedList);
+                        for (int i = 0; i < sortedList.size(); i++) {
+                            userNamesBuilder.append(sortedList.get(i));
+                            if (i < sortedList.size() - 1) {
+                                userNamesBuilder.append(" ");
+                            }
                         }
                     }
                     String userNamesStr = userNamesBuilder.toString();
