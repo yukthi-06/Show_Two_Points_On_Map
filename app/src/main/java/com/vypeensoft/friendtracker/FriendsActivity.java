@@ -41,6 +41,10 @@ public class FriendsActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
         Set<String> trackedFriends = prefs.getStringSet("tracked_friends", null);
 
+        // Load configured Current User
+        SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
+        String currentUser = appConfigPrefs.getString("current_user", "").trim();
+
         // Dynamically populate columns with CheckBoxes
         for (int i = 0; i < friends.size(); i++) {
             String name = friends.get(i);
@@ -52,7 +56,10 @@ public class FriendsActivity extends AppCompatActivity {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                 cb.setButtonTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#1976D2")));
             }
-            if (trackedFriends != null && trackedFriends.contains(name)) {
+            if (!currentUser.isEmpty() && name.equalsIgnoreCase(currentUser)) {
+                cb.setChecked(true);
+                cb.setEnabled(false); // Make it un-selectable
+            } else if (trackedFriends != null && trackedFriends.contains(name)) {
                 cb.setChecked(true);
             }
             checkBoxes.add(cb);
