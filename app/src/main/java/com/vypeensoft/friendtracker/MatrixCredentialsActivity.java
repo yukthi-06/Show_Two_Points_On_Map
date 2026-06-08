@@ -20,6 +20,7 @@ public class MatrixCredentialsActivity extends AppCompatActivity {
 
     private TextInputEditText editHomeserver, editUsername, editPassword, editDisplayName;
     private MaterialAutoCompleteTextView editPollingPeriod;
+    private com.google.android.material.switchmaterial.SwitchMaterial switchMatrixEnabled;
     private Button btnSave;
 
     private static final String[] POLLING_OPTIONS = {"5 Seconds", "10 Seconds", "30 Seconds", "1 Minute", "2 Minutes", "5 Minutes"};
@@ -48,6 +49,7 @@ public class MatrixCredentialsActivity extends AppCompatActivity {
         editDisplayName = findViewById(R.id.edit_matrix_display_name);
         editPassword = findViewById(R.id.edit_matrix_password);
         editPollingPeriod = findViewById(R.id.edit_matrix_polling_period);
+        switchMatrixEnabled = findViewById(R.id.switch_matrix_enabled);
         btnSave = findViewById(R.id.btn_save);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, POLLING_OPTIONS);
@@ -74,6 +76,7 @@ public class MatrixCredentialsActivity extends AppCompatActivity {
             }
         }
         editPollingPeriod.setText(periodText, false);
+        switchMatrixEnabled.setChecked(prefs.getBoolean(MapSettingsActivity.KEY_MATRIX_ENABLED, true));
     }
 
     private void saveConfig() {
@@ -88,6 +91,7 @@ public class MatrixCredentialsActivity extends AppCompatActivity {
         String periodText = editPollingPeriod.getText().toString();
         long period = POLLING_VALUES.getOrDefault(periodText, 10000L);
         editor.putLong(MapSettingsActivity.KEY_MATRIX_POLLING_PERIOD, period);
+        editor.putBoolean(MapSettingsActivity.KEY_MATRIX_ENABLED, switchMatrixEnabled.isChecked());
 
         // Clear cached token when credentials change
         editor.remove(MapSettingsActivity.KEY_MATRIX_TOKEN);

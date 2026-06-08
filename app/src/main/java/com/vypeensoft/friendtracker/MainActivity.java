@@ -120,7 +120,6 @@ public class MainActivity extends AppCompatActivity {
             if (newStopped) {
                 stopService(serviceIntent);
                 android.widget.Toast.makeText(this, "Tracking stopped. JSON updates paused.", android.widget.Toast.LENGTH_SHORT).show();
-            } else {
                 boolean locationGranted = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED;
                 boolean storageGranted = false;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
@@ -232,8 +231,6 @@ public class MainActivity extends AppCompatActivity {
             }, 101);
         }
 
-        android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
-        boolean stopped = prefs.getBoolean("tracking_stopped", false);
         if (storageGranted && locationGranted && !stopped) {
             try {
                 android.content.Intent serviceIntent = new android.content.Intent(this, com.vypeensoft.friendtracker.service.LocationService.class);
@@ -663,6 +660,8 @@ public class MainActivity extends AppCompatActivity {
         mapView.onResume();
         // Import settings in case they were modified/saved in Settings Activities
         com.vypeensoft.friendtracker.util.SettingsPersistenceManager.importSettings(this);
+        android.content.SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
+        boolean matrixEnabled = appConfigPrefs.getBoolean(MapSettingsActivity.KEY_MATRIX_ENABLED, true);
         loadMatrixCredentialsOnStartup();
         if (matrixClient != null) {
             matrixClient.loadConfig(this);
@@ -694,6 +693,10 @@ public class MainActivity extends AppCompatActivity {
         // Ensure LocationService is started if permissions are granted
         android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
         boolean stopped = prefs.getBoolean("tracking_stopped", false);
+        if (!matrixEnabled) {
+            stopMatrixPolling();
+        }
+
         if (!stopped && androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             boolean storageGranted = false;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
@@ -1550,6 +1553,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void startMatrixPolling() {
         if (matrixRunnable != null) return;
+
+        android.content.SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
+        boolean matrixEnabled = appConfigPrefs.getBoolean(MapSettingsActivity.KEY_MATRIX_ENABLED, true);
+        if (!matrixEnabled) {
+            android.util.Log.d("FriendTracker", "Matrix polling skipped because Matrix activity is disabled.");
+            return;
+        }
 
         android.content.SharedPreferences prefs = getSharedPreferences(MatrixClient.PREFS_NAME, MODE_PRIVATE);
         long pollPeriodMs = prefs.getLong(MatrixClient.KEY_MATRIX_POLLING_PERIOD, 5000L);

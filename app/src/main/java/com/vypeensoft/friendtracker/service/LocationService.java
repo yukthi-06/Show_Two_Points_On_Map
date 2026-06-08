@@ -99,17 +99,28 @@ public class LocationService extends Service {
     private void onLocationUpdated(Location location) {
         AppLogger.log(this, TAG, "GPS Polled - Coordinates: " + location.getLatitude() + ", " + location.getLongitude());
         
-        // Refresh config to pick up the latest active room choice
-        matrixClient.loadConfig(this);
+        SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
+        boolean matrixEnabled = appConfigPrefs.getBoolean("matrix_enabled", true);
         
         String currentUserId = userId;
-        String displayName = matrixClient.getDisplayName();
-        if (displayName != null && !displayName.isEmpty()) {
-            currentUserId = displayName;
-        }
         
-        LocationMessage message = new LocationMessage(currentUserId, location.getLatitude(), location.getLongitude());
-        matrixClient.sendLocation(message);
+        if (matrixEnabled) {
+            // Refresh config to pick up the latest active room choice
+            matrixClient.loadConfig(this);
+            
+            String displayName = matrixClient.getDisplayName();
+            if (displayName != null && !displayName.isEmpty()) {
+                currentUserId = displayName;
+            }
+            
+            LocationMessage message = new LocationMessage(currentUserId, location.getLatitude(), location.getLongitude());
+            matrixClient.sendLocation(message);
+        } else {
+            String userName = appConfigPrefs.getString("current_user", "").trim();
+            if (!userName.isEmpty()) {
+                currentUserId = userName;
+            }
+        }
         
         // Clean sender for session file name
         String cleanSender = currentUserId;

@@ -27,6 +27,7 @@ public class MapSettingsActivity extends AppCompatActivity {
     public static final String KEY_MATRIX_DISPLAY_NAME = "matrix_display_name";
     public static final String KEY_MATRIX_POLLING_PERIOD = "matrix_polling_period";
     public static final String KEY_CURRENT_USER = "current_user";
+    public static final String KEY_MATRIX_ENABLED = "matrix_enabled";
 
     private TextInputEditText editStyleUrl;
     private TextInputEditText editGpsInterval;
