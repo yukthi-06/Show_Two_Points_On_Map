@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
                     android.net.Uri uri = android.net.Uri.fromParts("package", getPackageName(), null);
                     intent.setData(uri);
                     startActivity(intent);
-                    android.widget.Toast.makeText(this, "Please grant All Files Access permission for location tracker", android.widget.Toast.LENGTH_LONG).show();
+                    //android.widget.Toast.makeText(this, "Please grant All Files Access permission for location tracker", android.widget.Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     android.content.Intent intent = new android.content.Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
                     startActivity(intent);
