@@ -364,12 +364,16 @@ public class MainActivity extends AppCompatActivity {
             String line = reader.readLine();
             if (line != null && !line.trim().isEmpty()) {
                 String[] parts = line.split("\\|");
-                if (parts.length >= 4) {
+                if (parts.length >= 3) {
                     String username = parts[0].trim();
                     double latitude = Double.parseDouble(parts[1].trim());
                     double longitude = Double.parseDouble(parts[2].trim());
-                    String colorName = parts[3].trim();
-                    int color = parseColor(colorName);
+                    int uniqueColor = getUniqueColorForUser(username);
+                    String colorName = "default";
+                    if (parts.length >= 4) {
+                        colorName = parts[3].trim();
+                    }
+                    int color = parseColor(colorName, uniqueColor);
                     return new UserLocation(username, latitude, longitude, color, colorName);
                 }
             }
@@ -387,8 +391,8 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    private int parseColor(String colorStr) {
-        if (colorStr == null) return Color.RED;
+    private int parseColor(String colorStr, int fallbackColor) {
+        if (colorStr == null) return fallbackColor;
         colorStr = colorStr.trim().toLowerCase();
         switch (colorStr) {
             case "red": return Color.parseColor("#E53935");
@@ -412,7 +416,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     return Color.parseColor(colorStr);
                 } catch (Exception e) {
-                    return Color.RED; // fallback
+                    return fallbackColor;
                 }
         }
     }
