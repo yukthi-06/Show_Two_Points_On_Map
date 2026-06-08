@@ -231,6 +231,8 @@ public class MainActivity extends AppCompatActivity {
             }, 101);
         }
 
+        android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+        boolean stopped = prefs.getBoolean("tracking_stopped", false);
         if (storageGranted && locationGranted && !stopped) {
             try {
                 android.content.Intent serviceIntent = new android.content.Intent(this, com.vypeensoft.friendtracker.service.LocationService.class);
