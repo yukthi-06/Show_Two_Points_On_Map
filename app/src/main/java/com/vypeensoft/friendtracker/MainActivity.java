@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private android.view.View menuMatrixRooms;
     private android.view.View menuHelp;
     private android.view.View menuAbout;
+    private android.view.View menuFriends;
 
     // Movement Loop Handler
     private final android.os.Handler movementHandler = new android.os.Handler(android.os.Looper.getMainLooper());
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
         menuMatrixRooms = findViewById(R.id.menu_matrix_rooms);
         menuHelp = findViewById(R.id.menu_help);
         menuAbout = findViewById(R.id.menu_about);
+        menuFriends = findViewById(R.id.menu_friends);
 
         btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(android.view.Gravity.LEFT));
 
@@ -124,6 +126,11 @@ public class MainActivity extends AppCompatActivity {
         menuAbout.setOnClickListener(v -> {
             drawerLayout.closeDrawers();
             startActivity(new android.content.Intent(this, AboutActivity.class));
+        });
+
+        menuFriends.setOnClickListener(v -> {
+            drawerLayout.closeDrawers();
+            startActivity(new android.content.Intent(this, FriendsActivity.class));
         });
 
         matrixClient = new MatrixClient(this);
@@ -219,6 +226,19 @@ public class MainActivity extends AppCompatActivity {
                 if (hasPermission) {
                     // 2. Read and parse location files
                     java.util.List<UserLocation> loadedLocations = readUserLocationsFromFiles();
+
+                    // Filter locations based on tracked friends selection
+                    android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+                    java.util.Set<String> trackedSet = prefs.getStringSet("tracked_friends", null);
+                    if (trackedSet != null && !trackedSet.isEmpty()) {
+                        java.util.List<UserLocation> filtered = new java.util.ArrayList<>();
+                        for (UserLocation loc : loadedLocations) {
+                            if (trackedSet.contains(loc.username)) {
+                                filtered.add(loc);
+                            }
+                        }
+                        loadedLocations = filtered;
+                    }
 
                     // 3. Keep track of active usernames
                     java.util.Set<String> newUsernames = new java.util.HashSet<>();
@@ -580,6 +600,23 @@ public class MainActivity extends AppCompatActivity {
         }
         restartMatrixPolling();
 
+        // Clear markers of friends that are no longer tracked
+        if (mapLibreMap != null) {
+            android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+            java.util.Set<String> trackedSet = prefs.getStringSet("tracked_friends", null);
+            if (trackedSet != null && !trackedSet.isEmpty()) {
+                java.util.Iterator<java.util.Map.Entry<String, Marker>> it = activeMarkers.entrySet().iterator();
+                while (it.hasNext()) {
+                    java.util.Map.Entry<String, Marker> entry = it.next();
+                    if (!trackedSet.contains(entry.getKey())) {
+                        mapLibreMap.removeMarker(entry.getValue());
+                        it.remove();
+                        activeMarkerColors.remove(entry.getKey());
+                    }
+                }
+            }
+        }
+
         // Ensure LocationService is started if permissions are granted
         if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             boolean storageGranted = false;
@@ -654,6 +691,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateFriendMarker(String username, double latitude, double longitude) {
         if (mapLibreMap == null) return;
+
+        // Filter based on selected tracked friends
+        android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+        java.util.Set<String> trackedSet = prefs.getStringSet("tracked_friends", null);
+        if (trackedSet != null && !trackedSet.isEmpty()) {
+            if (!trackedSet.contains(username)) {
+                // If not tracked, clean up marker if it somehow exists
+                Marker existing = activeMarkers.remove(username);
+                if (existing != null) {
+                    mapLibreMap.removeMarker(existing);
+                }
+                return;
+            }
+        }
+
         LatLng position = new LatLng(latitude, longitude);
         Marker marker = activeMarkers.get(username);
         IconFactory iconFactory = IconFactory.getInstance(MainActivity.this);
