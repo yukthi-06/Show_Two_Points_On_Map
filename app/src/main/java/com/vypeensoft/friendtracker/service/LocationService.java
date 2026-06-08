@@ -349,6 +349,21 @@ public class LocationService extends Service {
 
                 int responseCode = conn.getResponseCode();
                 AppLogger.log(LocationService.this, TAG, "Cloudflare POST response code: " + responseCode);
+
+                if (responseCode == java.net.HttpURLConnection.HTTP_OK) {
+                    java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+
+                    String jsonResponse = response.toString().trim();
+                    AppLogger.log(LocationService.this, TAG, "Cloudflare POST response: " + jsonResponse);
+
+                    processCloudflareResponse(jsonResponse);
+                }
             } catch (Exception e) {
                 AppLogger.logError(LocationService.this, TAG, "Error sending Cloudflare post request", e);
             } finally {
@@ -357,5 +372,76 @@ public class LocationService extends Service {
                 }
             }
         }).start();
+    }
+
+    private void processCloudflareResponse(String jsonResponse) {
+        try {
+            if (jsonResponse.startsWith("[")) {
+                org.json.JSONArray array = new org.json.JSONArray(jsonResponse);
+                for (int i = 0; i < array.length(); i++) {
+                    org.json.JSONObject obj = array.getJSONObject(i);
+                    String name = obj.optString("userName", "").trim();
+                    if (name.isEmpty()) {
+                        name = obj.optString("username", "").trim();
+                    }
+                    double lat = obj.optDouble("latitude", 0.0);
+                    double lon = obj.optDouble("longitude", 0.0);
+
+                    if (!name.isEmpty() && lat != 0.0 && lon != 0.0) {
+                        // Check if this is self
+                        SharedPreferences appConfig = getSharedPreferences("AppConfig", MODE_PRIVATE);
+                        String userName = appConfig.getString("current_user", "").trim();
+                        if (name.equalsIgnoreCase(userName)) {
+                            continue; // Skip self
+                        }
+
+                        // Clean username for session file name
+                        String cleanSender = name;
+                        if (cleanSender.contains(":")) {
+                            cleanSender = cleanSender.split(":")[0];
+                        }
+                        if (cleanSender.startsWith("@")) {
+                            cleanSender = cleanSender.substring(1);
+                        }
+                        cleanSender = cleanSender.replaceAll("[^a-zA-Z0-9_.-]", "_");
+
+                        // Write to sessions
+                        writeParticipantLocationToSessions(cleanSender, name, lat, lon);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            AppLogger.logError(this, TAG, "Error parsing Cloudflare response", e);
+        }
+    }
+
+    private void writeParticipantLocationToSessions(String cleanSender, String displayName, double lat, double lon) {
+        String[] paths = {
+            "/sdcard/Vypeensoft/Friends_Location_Tracker/sessions"
+        };
+
+        for (String path : paths) {
+            java.io.File dir = new java.io.File(path);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            if (!dir.exists()) {
+                dir = new java.io.File(android.os.Environment.getExternalStorageDirectory(), path.replace("/sdcard/", ""));
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+            }
+
+            java.io.File file = new java.io.File(dir, cleanSender + ".txt");
+            try {
+                String content = displayName + "|" + lat + "|" + lon + "|blue";
+                java.io.FileWriter writer = new java.io.FileWriter(file, false); // false to overwrite
+                writer.write(content);
+                writer.close();
+                Log.d(TAG, "Wrote participant " + displayName + " location to " + file.getAbsolutePath());
+            } catch (Exception e) {
+                Log.e(TAG, "Error writing participant location to sessions folder: " + path, e);
+            }
+        }
     }
 }
