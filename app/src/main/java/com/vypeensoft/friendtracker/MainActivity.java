@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
             android.content.Intent serviceIntent = new android.content.Intent(this, com.vypeensoft.friendtracker.service.LocationService.class);
             if (newStopped) {
                 stopService(serviceIntent);
+                deleteLocalSessionFiles();
                 android.widget.Toast.makeText(this, "Tracking stopped. JSON updates paused.", android.widget.Toast.LENGTH_SHORT).show();
                 
                 // Invoke delete endpoint
@@ -2093,5 +2094,27 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void deleteLocalSessionFiles() {
+        try {
+            java.io.File dir = new java.io.File("/sdcard/Vypeensoft/Friends_Location_Tracker/sessions");
+            if (!dir.exists()) {
+                dir = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/sessions");
+            }
+            if (dir.exists() && dir.isDirectory()) {
+                java.io.File[] files = dir.listFiles();
+                if (files != null) {
+                    for (java.io.File file : files) {
+                        if (file.isFile()) {
+                            file.delete();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.e("FriendTracker", "Error deleting local session files", e);
+        }
+    }
 }
+
 
