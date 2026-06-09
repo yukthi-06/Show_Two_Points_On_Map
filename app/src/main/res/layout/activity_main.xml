@@ -100,7 +100,7 @@
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#D32F2F"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:elevation="6dp"
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp" />

@@ -107,6 +107,9 @@ public class MainActivity extends AppCompatActivity {
         btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(android.view.Gravity.LEFT));
 
         btnToggleTracking = findViewById(R.id.btn_toggle_tracking);
+        if (btnToggleTracking != null) {
+            btnToggleTracking.setVisibility(android.view.View.VISIBLE);
+        }
         updateTrackingButtonState();
 
         btnToggleTracking.setOnClickListener(v -> {
