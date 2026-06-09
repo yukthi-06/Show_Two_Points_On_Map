@@ -309,28 +309,33 @@ public class MainActivity extends AppCompatActivity {
                     // 2. Read and parse location files
                     java.util.List<UserLocation> loadedLocations = readUserLocationsFromFiles();
 
-                    // Only show current user on map and not other users
-                    android.content.SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
-                    String currentUser = appConfigPrefs.getString("current_user", "").trim();
-                    if (currentUser.isEmpty()) {
-                        boolean matrixEnabled = appConfigPrefs.getBoolean("matrix_enabled", true);
-                        if (matrixEnabled && matrixClient != null) {
-                            String displayName = matrixClient.getDisplayName();
-                            if (displayName != null && !displayName.isEmpty()) {
-                                currentUser = displayName;
+                    // Only show current user on map and not other users after tracking is stopped
+                    android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+                    boolean stopped = prefs.getBoolean("tracking_stopped", false);
+                    if (stopped) {
+                        android.content.SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
+                        String currentUser = appConfigPrefs.getString("current_user", "").trim();
+                        if (currentUser.isEmpty()) {
+                            boolean matrixEnabled = appConfigPrefs.getBoolean("matrix_enabled", true);
+                            if (matrixEnabled && matrixClient != null) {
+                                String displayName = matrixClient.getDisplayName();
+                                if (displayName != null && !displayName.isEmpty()) {
+                                    currentUser = displayName;
+                                }
+                            }
+                            if (currentUser.isEmpty()) {
+                                currentUser = "user_" + android.os.Build.ID;
                             }
                         }
-                        if (currentUser.isEmpty()) {
-                            currentUser = "user_" + android.os.Build.ID;
+                        java.util.List<UserLocation> selfFiltered = new java.util.ArrayList<>();
+                        for (UserLocation loc : loadedLocations) {
+                            if (loc.username != null && loc.username.equalsIgnoreCase(currentUser)) {
+                                selfFiltered.add(loc);
+                            }
                         }
+                        loadedLocations = selfFiltered;
                     }
-                    java.util.List<UserLocation> selfFiltered = new java.util.ArrayList<>();
-                    for (UserLocation loc : loadedLocations) {
-                        if (loc.username != null && loc.username.equalsIgnoreCase(currentUser)) {
-                            selfFiltered.add(loc);
-                        }
-                    }
-                    loadedLocations = selfFiltered;
+
 
 
                     // Filter locations based on tracked friends selection
@@ -869,28 +874,33 @@ public class MainActivity extends AppCompatActivity {
     private void updateFriendMarker(String username, double latitude, double longitude) {
         if (mapLibreMap == null) return;
 
-        // Show only current user on map and not other users
-        android.content.SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
-        String currentUser = appConfigPrefs.getString("current_user", "").trim();
-        if (currentUser.isEmpty()) {
-            boolean matrixEnabled = appConfigPrefs.getBoolean("matrix_enabled", true);
-            if (matrixEnabled && matrixClient != null) {
-                String displayName = matrixClient.getDisplayName();
-                if (displayName != null && !displayName.isEmpty()) {
-                    currentUser = displayName;
+        // Show only current user on map and not other users after tracking is stopped
+        android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+        boolean stopped = prefs.getBoolean("tracking_stopped", false);
+        if (stopped) {
+            android.content.SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
+            String currentUser = appConfigPrefs.getString("current_user", "").trim();
+            if (currentUser.isEmpty()) {
+                boolean matrixEnabled = appConfigPrefs.getBoolean("matrix_enabled", true);
+                if (matrixEnabled && matrixClient != null) {
+                    String displayName = matrixClient.getDisplayName();
+                    if (displayName != null && !displayName.isEmpty()) {
+                        currentUser = displayName;
+                    }
+                }
+                if (currentUser.isEmpty()) {
+                    currentUser = "user_" + android.os.Build.ID;
                 }
             }
-            if (currentUser.isEmpty()) {
-                currentUser = "user_" + android.os.Build.ID;
+            if (!username.equalsIgnoreCase(currentUser)) {
+                Marker existing = activeMarkers.remove(username);
+                if (existing != null) {
+                    mapLibreMap.removeMarker(existing);
+                }
+                return;
             }
         }
-        if (!username.equalsIgnoreCase(currentUser)) {
-            Marker existing = activeMarkers.remove(username);
-            if (existing != null) {
-                mapLibreMap.removeMarker(existing);
-            }
-            return;
-        }
+
 
         // Filter based on selected tracked friends
 
