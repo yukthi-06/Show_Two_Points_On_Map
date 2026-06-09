@@ -347,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
                     android.widget.TextView tvSessionUsers = findViewById(R.id.tv_session_users);
                     if (tvSessionUsers != null) {
                         if (!userNamesStr.isEmpty()) {
-                            tvSessionUsers.setText(userNamesStr);
+                            tvSessionUsers.setText(userNamesStr + " (" + loadedLocations.size() + ")");
                             tvSessionUsers.setVisibility(android.view.View.VISIBLE);
                         } else {
                             tvSessionUsers.setVisibility(android.view.View.GONE);
