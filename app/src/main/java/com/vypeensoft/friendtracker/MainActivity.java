@@ -324,11 +324,7 @@ public class MainActivity extends AppCompatActivity {
                     loadedLocations = coloredLocations;
 
                     if (btnToggleTracking != null) {
-                        if (loadedLocations.size() > 1) {
-                            btnToggleTracking.setVisibility(android.view.View.VISIBLE);
-                        } else {
-                            btnToggleTracking.setVisibility(android.view.View.GONE);
-                        }
+                        btnToggleTracking.setVisibility(android.view.View.VISIBLE);
                     }
 
                     // Update overlay text with usernames of current session from friends list checkboxes
