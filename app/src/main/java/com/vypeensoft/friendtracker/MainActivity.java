@@ -663,8 +663,20 @@ public class MainActivity extends AppCompatActivity {
      * Programmatically draws a beautiful classic teardrop vector map pin with a dynamic floating name badge.
      */
     private Bitmap createTeardropMarkerBitmap(int color, String text) {
-        int width = 160;
+        Paint textPaint = new Paint();
+        textPaint.setAntiAlias(true);
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(28); // Increased from 20 to 28
+        textPaint.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD));
+        textPaint.setTextAlign(Paint.Align.CENTER);
+
+        float textWidth = textPaint.measureText(text);
+        float capsuleWidth = textWidth + 32; // 16px padding on each side
+        
+        int width = (int) Math.max(160, capsuleWidth + 10); // Dynamically size width to prevent clipping
         int height = 192;
+        float centerX = width / 2f;
+        
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
 
@@ -674,29 +686,29 @@ public class MainActivity extends AppCompatActivity {
 
         // 1. Draw soft drop shadow under the tip
         paint.setColor(Color.parseColor("#22000000"));
-        canvas.drawOval(new RectF(80 - 18, 160 - 4, 80 + 18, 160 + 4), paint);
+        canvas.drawOval(new RectF(centerX - 18, 160 - 4, centerX + 18, 160 + 4), paint);
 
         // 2. Draw white outer pin border
         paint.setColor(Color.WHITE);
         Path outerPath = new Path();
-        outerPath.moveTo(80, 160); // Tip at bottom
-        outerPath.lineTo(46, 100); // Left tangent
-        outerPath.arcTo(new RectF(46, 62, 114, 130), 150, 240, false); // Top circle
+        outerPath.moveTo(centerX, 160); // Tip at bottom
+        outerPath.lineTo(centerX - 34, 100); // Left tangent
+        outerPath.arcTo(new RectF(centerX - 34, 62, centerX + 34, 130), 150, 240, false); // Top circle
         outerPath.close();
         canvas.drawPath(outerPath, paint);
 
         // 3. Draw colored inner pin core
         paint.setColor(color);
         Path innerPath = new Path();
-        innerPath.moveTo(80, 152); // Tip at bottom
-        innerPath.lineTo(52, 102); // Left tangent
-        innerPath.arcTo(new RectF(52, 68, 108, 124), 150, 240, false); // Top circle
+        innerPath.moveTo(centerX, 152); // Tip at bottom
+        innerPath.lineTo(centerX - 28, 102); // Left tangent
+        innerPath.arcTo(new RectF(centerX - 28, 68, centerX + 28, 124), 150, 240, false); // Top circle
         innerPath.close();
         canvas.drawPath(innerPath, paint);
 
         // 4. Draw central white glowing dot inside the head of the pin
         paint.setColor(Color.WHITE);
-        canvas.drawCircle(80, 96, 12, paint);
+        canvas.drawCircle(centerX, 96, 12, paint);
 
         // 5. Draw connecting line/stem from capsule to the pin head top
         Paint connectorPaint = new Paint();
@@ -704,36 +716,27 @@ public class MainActivity extends AppCompatActivity {
         connectorPaint.setStyle(Paint.Style.STROKE);
         connectorPaint.setStrokeWidth(4.0f);
         connectorPaint.setColor(color);
-        canvas.drawLine(80, 48, 80, 64, connectorPaint);
+        canvas.drawLine(centerX, 48, centerX, 64, connectorPaint);
 
         // 6. Draw name tag capsule
-        Paint textPaint = new Paint();
-        textPaint.setAntiAlias(true);
-        textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(20);
-        textPaint.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD));
-        textPaint.setTextAlign(Paint.Align.CENTER);
-
-        float textWidth = textPaint.measureText(text);
-        float capsuleWidth = textWidth + 28; // 14px padding on each side
-        float top = 12;
-        float bottom = 48;
-        float left = 80 - capsuleWidth / 2;
-        float right = 80 + capsuleWidth / 2;
+        float top = 4;
+        float bottom = 52;
+        float left = centerX - capsuleWidth / 2;
+        float right = centerX + capsuleWidth / 2;
 
         // Capsule Shadow
         Paint shadowPaint = new Paint();
         shadowPaint.setAntiAlias(true);
         shadowPaint.setStyle(Paint.Style.FILL);
         shadowPaint.setColor(Color.parseColor("#25000000"));
-        canvas.drawRoundRect(left + 2, top + 2, right + 2, bottom + 2, 18, 18, shadowPaint);
+        canvas.drawRoundRect(left + 2, top + 2, right + 2, bottom + 2, 24, 24, shadowPaint);
 
         // Capsule Background (Premium Dark Charcoal)
         Paint bgPaint = new Paint();
         bgPaint.setAntiAlias(true);
         bgPaint.setStyle(Paint.Style.FILL);
         bgPaint.setColor(Color.parseColor("#1E1E24"));
-        canvas.drawRoundRect(left, top, right, bottom, 18, 18, bgPaint);
+        canvas.drawRoundRect(left, top, right, bottom, 24, 24, bgPaint);
 
         // Capsule Border (Accent colored matching the pin)
         Paint borderPaint = new Paint();
@@ -741,12 +744,12 @@ public class MainActivity extends AppCompatActivity {
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setStrokeWidth(3.0f);
         borderPaint.setColor(color);
-        canvas.drawRoundRect(left, top, right, bottom, 18, 18, borderPaint);
+        canvas.drawRoundRect(left, top, right, bottom, 24, 24, borderPaint);
 
         // Capsule Text (White, perfectly vertically centered)
         Paint.FontMetrics fm = textPaint.getFontMetrics();
         float textY = (top + bottom) / 2 - (fm.ascent + fm.descent) / 2;
-        canvas.drawText(text, 80, textY, textPaint);
+        canvas.drawText(text, centerX, textY, textPaint);
 
         return bitmap;
     }
