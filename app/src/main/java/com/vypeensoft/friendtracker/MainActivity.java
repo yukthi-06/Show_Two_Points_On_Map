@@ -123,7 +123,36 @@ public class MainActivity extends AppCompatActivity {
             if (newStopped) {
                 stopService(serviceIntent);
                 android.widget.Toast.makeText(this, "Tracking stopped. JSON updates paused.", android.widget.Toast.LENGTH_SHORT).show();
+                
+                // Invoke delete endpoint
+                String cloudflareUrl = loadCloudflareUrl();
+                if (cloudflareUrl != null && !cloudflareUrl.trim().isEmpty()) {
+                    android.content.SharedPreferences friendPrefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+                    java.util.Set<String> trackedFriends = friendPrefs.getStringSet("tracked_friends", null);
+                    String sessionId = "";
+                    if (trackedFriends != null && !trackedFriends.isEmpty()) {
+                        java.util.List<String> list = new java.util.ArrayList<>();
+                        for (String f : trackedFriends) {
+                            list.add(f.trim().toLowerCase());
+                        }
+                        java.util.Collections.sort(list);
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < list.size(); i++) {
+                            sb.append(list.get(i));
+                            if (i < list.size() - 1) {
+                                sb.append("_");
+                            }
+                        }
+                        sessionId = sb.toString();
+                    }
+
+                    android.content.SharedPreferences appConfig = getSharedPreferences("AppConfig", MODE_PRIVATE);
+                    String userName = appConfig.getString("current_user", "");
+                    
+                    sendCloudflareDelete(cloudflareUrl, sessionId, userName);
+                }
             } else {
+
                 boolean locationGranted = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED;
                 boolean storageGranted = false;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
@@ -278,6 +307,30 @@ public class MainActivity extends AppCompatActivity {
                 if (hasPermission) {
                     // 2. Read and parse location files
                     java.util.List<UserLocation> loadedLocations = readUserLocationsFromFiles();
+
+                    // Only show current user on map and not other users
+                    android.content.SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
+                    String currentUser = appConfigPrefs.getString("current_user", "").trim();
+                    if (currentUser.isEmpty()) {
+                        boolean matrixEnabled = appConfigPrefs.getBoolean("matrix_enabled", true);
+                        if (matrixEnabled && matrixClient != null) {
+                            String displayName = matrixClient.getDisplayName();
+                            if (displayName != null && !displayName.isEmpty()) {
+                                currentUser = displayName;
+                            }
+                        }
+                        if (currentUser.isEmpty()) {
+                            currentUser = "user_" + android.os.Build.ID;
+                        }
+                    }
+                    java.util.List<UserLocation> selfFiltered = new java.util.ArrayList<>();
+                    for (UserLocation loc : loadedLocations) {
+                        if (loc.username != null && loc.username.equalsIgnoreCase(currentUser)) {
+                            selfFiltered.add(loc);
+                        }
+                    }
+                    loadedLocations = selfFiltered;
+
 
                     // Filter locations based on tracked friends selection
                     android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
@@ -815,7 +868,31 @@ public class MainActivity extends AppCompatActivity {
     private void updateFriendMarker(String username, double latitude, double longitude) {
         if (mapLibreMap == null) return;
 
+        // Show only current user on map and not other users
+        android.content.SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
+        String currentUser = appConfigPrefs.getString("current_user", "").trim();
+        if (currentUser.isEmpty()) {
+            boolean matrixEnabled = appConfigPrefs.getBoolean("matrix_enabled", true);
+            if (matrixEnabled && matrixClient != null) {
+                String displayName = matrixClient.getDisplayName();
+                if (displayName != null && !displayName.isEmpty()) {
+                    currentUser = displayName;
+                }
+            }
+            if (currentUser.isEmpty()) {
+                currentUser = "user_" + android.os.Build.ID;
+            }
+        }
+        if (!username.equalsIgnoreCase(currentUser)) {
+            Marker existing = activeMarkers.remove(username);
+            if (existing != null) {
+                mapLibreMap.removeMarker(existing);
+            }
+            return;
+        }
+
         // Filter based on selected tracked friends
+
         android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
         java.util.Set<String> trackedSet = prefs.getStringSet("tracked_friends", null);
         if (trackedSet != null && !trackedSet.isEmpty()) {
@@ -1836,4 +1913,185 @@ public class MainActivity extends AppCompatActivity {
             btnToggleTracking.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#D32F2F"))); // Crimson/Red
         }
     }
+
+    private String loadCloudflareUrl() {
+        try {
+            java.io.File file = new java.io.File("/sdcard/Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
+            if (!file.exists()) {
+                file = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/settings/cloudflare.json");
+            }
+            if (file.exists()) {
+                java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(file));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                br.close();
+                org.json.JSONObject json = new org.json.JSONObject(sb.toString());
+                return json.optString("cloudflareUrl", "");
+            }
+        } catch (Exception e) {
+            android.util.Log.e("FriendTracker", "Error loading cloudflare url", e);
+        }
+        return "";
+    }
+
+    private void sendCloudflareDelete(String cloudflareUrl, String sessionId, String userName) {
+        new Thread(() -> {
+            java.net.HttpURLConnection conn = null;
+            try {
+                String urlStr = cloudflareUrl.trim();
+                if (urlStr.endsWith("/update")) {
+                    urlStr = urlStr.substring(0, urlStr.length() - 7);
+                } else if (urlStr.endsWith("/update/")) {
+                    urlStr = urlStr.substring(0, urlStr.length() - 8);
+                }
+                if (urlStr.endsWith("/")) {
+                    urlStr += "delete";
+                } else {
+                    urlStr += "/delete";
+                }
+                android.util.Log.i("FriendTracker", "Sending POST delete to: " + urlStr);
+                
+                org.json.JSONObject payload = new org.json.JSONObject();
+                payload.put("sessionid", sessionId);
+                payload.put("userName", userName);
+                
+                java.net.URL url = new java.net.URL(urlStr);
+                conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
+
+                java.io.OutputStream os = conn.getOutputStream();
+                os.write(payload.toString().getBytes("UTF-8"));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                android.util.Log.i("FriendTracker", "Cloudflare delete POST response code: " + responseCode);
+
+                if (responseCode == java.net.HttpURLConnection.HTTP_OK) {
+                    java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    StringBuilder response = new StringBuilder();
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+
+                    String jsonResponse = response.toString().trim();
+                    android.util.Log.i("FriendTracker", "Cloudflare delete POST response: " + jsonResponse);
+
+                    processCloudflareDeleteResponse(jsonResponse);
+                }
+            } catch (Exception e) {
+                android.util.Log.e("FriendTracker", "Error sending Cloudflare delete post request", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+        }).start();
+    }
+
+    private void processCloudflareDeleteResponse(String jsonResponse) {
+        try {
+            if (jsonResponse.startsWith("[")) {
+                org.json.JSONArray array = new org.json.JSONArray(jsonResponse);
+                java.util.Set<String> remainingCleanNames = new java.util.HashSet<>();
+                
+                for (int i = 0; i < array.length(); i++) {
+                    org.json.JSONObject obj = array.getJSONObject(i);
+                    String name = obj.optString("userName", "").trim();
+                    if (name.isEmpty()) {
+                        name = obj.optString("username", "").trim();
+                    }
+                    double lat = obj.optDouble("latitude", 0.0);
+                    double lon = obj.optDouble("longitude", 0.0);
+
+                    if (!name.isEmpty() && lat != 0.0 && lon != 0.0) {
+                        String cleanSender = name;
+                        if (cleanSender.contains(":")) {
+                            cleanSender = cleanSender.split(":")[0];
+                        }
+                        if (cleanSender.startsWith("@")) {
+                            cleanSender = cleanSender.substring(1);
+                        }
+                        cleanSender = cleanSender.replaceAll("[^a-zA-Z0-9_.-]", "_");
+                        remainingCleanNames.add(cleanSender.toLowerCase());
+
+                        writeParticipantLocationToSessions(cleanSender, name, lat, lon);
+                    }
+                }
+                
+                java.io.File dir = new java.io.File("/sdcard/Vypeensoft/Friends_Location_Tracker/sessions");
+                if (!dir.exists()) {
+                    dir = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/sessions");
+                }
+                if (dir.exists() && dir.isDirectory()) {
+                    java.io.File[] files = dir.listFiles();
+                    if (files != null) {
+                        for (java.io.File file : files) {
+                            if (file.isFile() && file.getName().endsWith(".txt")) {
+                                String filename = file.getName();
+                                String userPart = filename.substring(0, filename.length() - 4).toLowerCase();
+                                
+                                android.content.SharedPreferences appConfig = getSharedPreferences("AppConfig", MODE_PRIVATE);
+                                String currentUser = appConfig.getString("current_user", "").trim();
+                                String cleanSelf = currentUser;
+                                if (cleanSelf.contains(":")) {
+                                    cleanSelf = cleanSelf.split(":")[0];
+                                }
+                                if (cleanSelf.startsWith("@")) {
+                                    cleanSelf = cleanSelf.substring(1);
+                                }
+                                cleanSelf = cleanSelf.replaceAll("[^a-zA-Z0-9_.-]", "_").toLowerCase();
+                                
+                                if (!userPart.equals(cleanSelf) && !remainingCleanNames.contains(userPart)) {
+                                    file.delete();
+                                    android.util.Log.d("FriendTracker", "Deleted stale session file for non-remaining user: " + file.getName());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.e("FriendTracker", "Error parsing Cloudflare delete response", e);
+        }
+    }
+
+    private void writeParticipantLocationToSessions(String cleanSender, String displayName, double lat, double lon) {
+        String[] paths = {
+            "/sdcard/Vypeensoft/Friends_Location_Tracker/sessions"
+        };
+
+        for (String path : paths) {
+            java.io.File dir = new java.io.File(path);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            if (!dir.exists()) {
+                dir = new java.io.File(android.os.Environment.getExternalStorageDirectory(), path.replace("/sdcard/", ""));
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+            }
+
+            java.io.File file = new java.io.File(dir, cleanSender + ".txt");
+            try {
+                String content = displayName + "|" + lat + "|" + lon + "|blue";
+                java.io.FileWriter writer = new java.io.FileWriter(file, false);
+                writer.write(content);
+                writer.close();
+                android.util.Log.d("FriendTracker", "Wrote participant " + displayName + " location to " + file.getAbsolutePath());
+            } catch (Exception e) {
+                android.util.Log.e("FriendTracker", "Error writing participant location to sessions folder: " + path, e);
+            }
+        }
+    }
 }
+
