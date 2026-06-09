@@ -389,6 +389,8 @@ public class LocationService extends Service {
         try {
             if (jsonResponse.startsWith("[")) {
                 org.json.JSONArray array = new org.json.JSONArray(jsonResponse);
+                java.util.Set<String> remainingCleanNames = new java.util.HashSet<>();
+                
                 for (int i = 0; i < array.length(); i++) {
                     org.json.JSONObject obj = array.getJSONObject(i);
                     String name = obj.optString("userName", "").trim();
@@ -415,9 +417,43 @@ public class LocationService extends Service {
                             cleanSender = cleanSender.substring(1);
                         }
                         cleanSender = cleanSender.replaceAll("[^a-zA-Z0-9_.-]", "_");
+                        remainingCleanNames.add(cleanSender.toLowerCase());
 
                         // Write to sessions
                         writeParticipantLocationToSessions(cleanSender, name, lat, lon);
+                    }
+                }
+
+                // Delete local files in sessions folder that don't have a corresponding record on the server
+                java.io.File dir = new java.io.File("/sdcard/Vypeensoft/Friends_Location_Tracker/sessions");
+                if (!dir.exists()) {
+                    dir = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "Vypeensoft/Friends_Location_Tracker/sessions");
+                }
+                if (dir.exists() && dir.isDirectory()) {
+                    java.io.File[] files = dir.listFiles();
+                    if (files != null) {
+                        for (java.io.File file : files) {
+                            if (file.isFile() && file.getName().endsWith(".txt")) {
+                                String filename = file.getName();
+                                String userPart = filename.substring(0, filename.length() - 4).toLowerCase();
+
+                                SharedPreferences appConfig = getSharedPreferences("AppConfig", MODE_PRIVATE);
+                                String currentUser = appConfig.getString("current_user", "").trim();
+                                String cleanSelf = currentUser;
+                                if (cleanSelf.contains(":")) {
+                                    cleanSelf = cleanSelf.split(":")[0];
+                                }
+                                if (cleanSelf.startsWith("@")) {
+                                    cleanSelf = cleanSelf.substring(1);
+                                }
+                                cleanSelf = cleanSelf.replaceAll("[^a-zA-Z0-9_.-]", "_").toLowerCase();
+
+                                if (!userPart.equals(cleanSelf) && !remainingCleanNames.contains(userPart)) {
+                                    file.delete();
+                                    Log.d(TAG, "Deleted stale session file for non-remaining user: " + file.getName());
+                                }
+                            }
+                        }
                     }
                 }
             }
