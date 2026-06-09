@@ -310,8 +310,8 @@ public class MainActivity extends AppCompatActivity {
                     java.util.List<UserLocation> loadedLocations = readUserLocationsFromFiles();
 
                     // Only show current user on map and not other users after tracking is stopped
-                    android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
-                    boolean stopped = prefs.getBoolean("tracking_stopped", false);
+                    android.content.SharedPreferences trackerPrefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+                    boolean stopped = trackerPrefs.getBoolean("tracking_stopped", false);
                     if (stopped) {
                         android.content.SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
                         String currentUser = appConfigPrefs.getString("current_user", "").trim();
@@ -875,8 +875,8 @@ public class MainActivity extends AppCompatActivity {
         if (mapLibreMap == null) return;
 
         // Show only current user on map and not other users after tracking is stopped
-        android.content.SharedPreferences prefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
-        boolean stopped = prefs.getBoolean("tracking_stopped", false);
+        android.content.SharedPreferences trackerPrefs = getSharedPreferences("friend_tracker_prefs", MODE_PRIVATE);
+        boolean stopped = trackerPrefs.getBoolean("tracking_stopped", false);
         if (stopped) {
             android.content.SharedPreferences appConfigPrefs = getSharedPreferences("AppConfig", MODE_PRIVATE);
             String currentUser = appConfigPrefs.getString("current_user", "").trim();
